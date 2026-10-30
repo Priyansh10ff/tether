@@ -1,1 +1,30 @@
 @import "tailwindcss";
+
+@theme {
+  --color-bg: #f5f6f4;
+  --color-bg2: #ffffff;
+  --color-ink: #0f1113;
+  --color-ink2: #4b5259;
+  --color-dim: #858d95;
+  --color-line: #dcdfdb;
+  --color-line2: #b9bec0;
+  --color-acc: #1f3cff;
+  --color-ok: #13864f;
+  --color-bad: #d7263d;
+  --color-warn: #c76a00;
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, Menlo, monospace;
+  --shadow-soft: 0 20px 50px -30px rgba(15, 17, 19, 0.35);
+}
+
+html, body { background: var(--color-bg); color: var(--color-ink); }
+.tnum { font-variant-numeric: tabular-nums; }
+
+.btn { @apply inline-flex items-center gap-2 rounded-lg border border-line2 bg-bg2 px-3.5 py-2 text-sm font-medium transition hover:border-ink disabled:opacity-50; }
+.btn-pri { @apply inline-flex items-center gap-2 rounded-lg border border-ink bg-ink px-3.5 py-2 text-sm font-medium text-white transition hover:bg-black disabled:opacity-50; }
+.btn-danger { @apply inline-flex items-center gap-2 rounded-lg border border-bad/40 bg-bg2 px-3.5 py-2 text-sm font-medium text-bad transition hover:border-bad; }
+.pill { @apply inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[11px] font-medium; }
+.card { @apply rounded-xl border border-line bg-bg2; }
+.input { @apply w-full rounded-lg border border-line2 bg-bg px-3 py-2 text-sm outline-none focus:border-acc; }
+.th { @apply px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-dim; }
+.td { @apply px-4 py-2.5 align-middle; }
