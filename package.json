@@ -14,7 +14,8 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "retention": "tsx src/scripts/retention.ts"
+    "retention": "tsx src/scripts/retention.ts",
+    "cli": "tsx src/cli/index.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",
@@ -40,5 +41,8 @@
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "bin": {
+    "tether": "./bin/tether.mjs"
+  }
 }
