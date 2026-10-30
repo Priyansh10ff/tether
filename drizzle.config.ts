@@ -4,5 +4,5 @@ export default defineConfig({
   schema: "./src/db/schema.ts",
   out: "./drizzle",
   dialect: "postgresql",
-  dbCredentials: { url: process.env.DATABASE_URL ?? "postgres://tether:tether@localhost:5432/tether" },
+  dbCredentials: { url: process.env.DATABASE_URL ?? "postgres://tether:tether@localhost:5433/tether" },
 });

@@ -117,7 +117,7 @@ Reads `TETHER_URL` (default `http://localhost:3000`) and `TETHER_API_KEY`.
 **Local development**
 
 ```
-docker compose up -d db
+docker compose up -d db   # Postgres on localhost:5433 (5433 so it never collides with a local install)
 cp .env.example .env
 npm install
 npm run db:migrate
