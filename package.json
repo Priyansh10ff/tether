@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "retention": "tsx src/scripts/retention.ts",
-    "cli": "tsx src/cli/index.ts"
+    "cli": "tsx src/cli/index.ts",
+    "seed": "tsx src/scripts/seed.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",

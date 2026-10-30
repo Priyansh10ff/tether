@@ -1,3 +1,4 @@
+# docker compose up  ->  dashboard on http://localhost:3000, worker running, Postgres migrated.
 services:
   db:
     image: postgres:16-alpine
@@ -14,6 +15,38 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  migrate:
+    build: .
+    command: npm run db:migrate
+    environment: &env
+      DATABASE_URL: postgres://tether:tether@db:5432/tether
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-tether}
+      SESSION_SECRET: ${SESSION_SECRET:-change-me-please-32-chars-minimum}
+      DELIVERY_TIMEOUT_MS: ${DELIVERY_TIMEOUT_MS:-8000}
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-8}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment: *env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    build: .
+    command: npm run worker
+    environment: *env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    deploy:
+      replicas: 2
 
 volumes:
   pgdata:
