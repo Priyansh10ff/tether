@@ -16,15 +16,23 @@ export type ClaimedDelivery = {
  *
  * FOR UPDATE SKIP LOCKED lets many workers poll the same table without fighting
  * over rows. A worker that dies mid-send never commits; its row stays `in_flight`
- * until the reaper (below) hands it back after the lease expires.
+ * until reapStaleClaims hands it back after the lease expires.
  *
- * Ordering: a delivery with an ordering key is only claimable if no earlier delivery
- * for the same endpoint+key is still pending or in flight.
+ * Per-endpoint rules applied here, in SQL, so they hold across every worker:
+ *  - ordering: a keyed delivery waits for earlier deliveries with the same endpoint+key
+ *  - breaker: an `open` endpoint gets exactly one probe delivery per probe window
+ *  - rate limit: attempts in the last second + rows in flight must stay under rate_limit_per_second
  */
 export async function claimDeliveries(db: Db, workerId: string, limit: number): Promise<ClaimedDelivery[]> {
   const rows = await db.execute(sql`
-    with due as (
-      select d.id
+    with cand as (
+      select d.id,
+             e.state,
+             e.rate_limit_per_second as rl,
+             row_number() over (partition by d.endpoint_id order by d.next_attempt_at, d.created_at) as rn,
+             (select count(*) from deliveries f where f.endpoint_id = d.endpoint_id and f.status = 'in_flight')
+             + (select count(*) from attempts a join deliveries dd on dd.id = a.delivery_id
+                 where dd.endpoint_id = d.endpoint_id and a.started_at > now() - interval '1 second') as used
       from deliveries d
       join endpoints e on e.id = d.endpoint_id
       where d.status = 'pending'
@@ -41,6 +49,15 @@ export async function claimDeliveries(db: Db, workerId: string, limit: number): 
               and p.status in ('pending', 'in_flight')
           )
         )
+    ),
+    due as (
+      select d.id, d.next_attempt_at
+      from deliveries d
+      where d.id in (
+        select id from cand
+        where (state <> 'open' or rn = 1)
+          and (rl is null or rn <= rl - used)
+      )
       order by d.next_attempt_at
       limit ${limit}
       for update of d skip locked
@@ -61,6 +78,8 @@ export async function reapStaleClaims(db: Db, leaseMs: number) {
     update deliveries
     set status = 'pending', claimed_by = null, claimed_at = null
     where status = 'in_flight' and claimed_at < now() - (${leaseMs} || ' milliseconds')::interval
+    returning id
   `);
-  return res.rowCount ?? 0;
+  return res.rows.length;
 }
+
