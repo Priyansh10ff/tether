@@ -92,7 +92,7 @@ export default function LandingPage() {
         <div className="sh"><div className="rv"><span className="kicker">04 — Dashboard</span><h2>Replay from where it broke.</h2></div>
           <p className="rv d1">Filter by type, endpoint or status code. Open an event and read the full attempt timeline. Replay one delivery, or all 14 that died while your partner's API was down.</p></div>
         <div className="dash rv" id="dashcard">
-          <div className="tb"><b>Tether</b><span className="on">Overview</span><span>Events</span><span>Endpoints</span><span>Dead letters · 14</span><span className="live">● 3 workers · acme-prod</span></div>
+          <div className="tb"><b>Tether</b><Link className="on" href="/overview">Overview</Link><Link href="/events">Events</Link><Link href="/endpoints">Endpoints</Link><Link href="/dead-letters">Dead letters · 14</Link><span className="live">● 3 workers · acme-prod</span></div>
           <div className="grid">
             <div className="m rv"><div className="k">Delivered, 24h</div><div className="v">23,904</div></div>
             <div className="m rv d1"><div className="k">Success rate</div><div className="v ok">99.41%</div></div>
