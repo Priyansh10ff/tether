@@ -3,6 +3,7 @@ import { attempts, deliveries, endpoints, events } from "@/db/schema";
 import { newId } from "@/lib/ids";
 import { buildHeaders } from "@/lib/signing";
 import { isRetryableStatus, isSuccessStatus, nextAttemptAt, shouldDeadLetter } from "@/lib/retry";
+import { nextProbeAt, shouldOpen } from "@/lib/breaker";
 import type { Db } from "@/db";
 import type { ClaimedDelivery } from "./claim";
 
@@ -103,9 +104,16 @@ export async function dispatch(
         .set({ consecutiveFailures: 0, state: sql`case when ${endpoints.state} = 'open' then 'active' else ${endpoints.state} end`, breakerOpenedAt: null, breakerProbeAt: null })
         .where(eq(endpoints.id, endpoint.id));
     } else if (statusCode === null || statusCode >= 500) {
+      const failures = endpoint.consecutiveFailures + 1;
+      const open = endpoint.state === "open" || shouldOpen(failures);
       await tx
         .update(endpoints)
-        .set({ consecutiveFailures: sql`${endpoints.consecutiveFailures} + 1` })
+        .set({
+          consecutiveFailures: failures,
+          state: open && endpoint.state !== "paused" ? "open" : endpoint.state,
+          breakerOpenedAt: open ? (endpoint.breakerOpenedAt ?? nowDate) : null,
+          breakerProbeAt: open ? nextProbeAt(now()) : null,
+        })
         .where(eq(endpoints.id, endpoint.id));
     }
   });
