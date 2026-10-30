@@ -36,30 +36,30 @@ export default async function EndpointsPage({ searchParams }: { searchParams: Pr
 
       <form action={createEndpoint} className="card mb-6 grid gap-3 p-4 md:grid-cols-[2fr_2fr_1fr_auto]">
         <div>
-          <label className="block text-xs font-medium text-ink2" htmlFor="url">URL</label>
-          <input id="url" name="url" required className="input mt-1 font-mono text-xs" placeholder="https://api.acme.com/hooks/tether" />
+          <label className="lbl" htmlFor="url">URL</label>
+          <input id="url" name="url" required className="input font-mono text-xs" placeholder="https://api.acme.com/hooks/tether" />
           {error === "url" && <p className="mt-1 text-xs text-bad">Must be an http(s) URL.</p>}
         </div>
         <div>
-          <label className="block text-xs font-medium text-ink2" htmlFor="types">Event types</label>
-          <input id="types" name="types" className="input mt-1 font-mono text-xs" placeholder="order.*, refund.issued  (or *)" defaultValue="*" />
+          <label className="lbl" htmlFor="types">Event types</label>
+          <input id="types" name="types" className="input font-mono text-xs" placeholder="order.*, refund.issued  (or *)" defaultValue="*" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-ink2" htmlFor="rate_limit">Rate limit /s</label>
-          <input id="rate_limit" name="rate_limit" type="number" min={1} className="input mt-1 font-mono text-xs" placeholder="none" />
+          <label className="lbl" htmlFor="rate_limit">Rate limit /s</label>
+          <input id="rate_limit" name="rate_limit" type="number" min={1} className="input font-mono text-xs" placeholder="none" />
         </div>
         <div className="flex items-end"><button className="btn-pri">Add endpoint</button></div>
       </form>
 
       <div className="card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="border-b border-line"><tr><th className="th">URL</th><th className="th">Subscribed</th><th className="th">State</th><th className="th">Success 24h</th><th className="th">p50</th><th className="th">Rate limit</th></tr></thead>
+        <table className="table">
+          <thead><tr><th className="th">URL</th><th className="th">Subscribed</th><th className="th">State</th><th className="th">Success 24h</th><th className="th">p50</th><th className="th">Rate limit</th></tr></thead>
           <tbody>
             {rows.length === 0 && <tr><td className="td py-8 text-center text-dim" colSpan={6}>No endpoints yet.</td></tr>}
             {rows.map(({ ep, subs, total, ok, p50 }) => {
               const pct = Number(total) ? (Number(ok) / Number(total)) * 100 : null;
               return (
-                <tr key={ep.id} className="border-b border-line last:border-0 hover:bg-bg">
+                <tr key={ep.id}>
                   <td className="td">
                     <Link href={`/endpoints/${ep.id}`} className="font-mono text-xs hover:text-acc">{ep.url}</Link>
                     {ep.description && <div className="text-xs text-dim">{ep.description}</div>}

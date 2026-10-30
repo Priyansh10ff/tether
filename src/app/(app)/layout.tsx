@@ -9,7 +9,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen">
       <Sidebar project={project} projects={all.length ? all : [project]} />
-      <main className="min-w-0 flex-1 px-6 py-7 lg:px-10">{children}</main>
+      <main className="min-w-0 flex-1">
+        <div className="mx-auto w-full max-w-[1240px] px-5 py-8 md:px-10">{children}</div>
+      </main>
     </div>
   );
 }

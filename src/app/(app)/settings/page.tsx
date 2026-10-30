@@ -44,8 +44,8 @@ export default async function SettingsPage() {
         <h2 className="font-semibold">Project</h2>
         <form action={rename} className="mt-3 flex flex-wrap items-end gap-3">
           <div className="min-w-48 flex-1">
-            <label className="block text-xs font-medium text-ink2" htmlFor="name">Name</label>
-            <input id="name" name="name" defaultValue={project.name} className="input mt-1" />
+            <label className="lbl" htmlFor="name">Name</label>
+            <input id="name" name="name" defaultValue={project.name} className="input" />
           </div>
           <button className="btn">Rename</button>
         </form>
@@ -56,8 +56,8 @@ export default async function SettingsPage() {
         <h2 className="font-semibold">New project</h2>
         <form action={createProject} className="mt-3 flex flex-wrap items-end gap-3">
           <div className="min-w-48 flex-1">
-            <label className="block text-xs font-medium text-ink2" htmlFor="newname">Name</label>
-            <input id="newname" name="name" className="input mt-1" placeholder="acme-staging" />
+            <label className="lbl" htmlFor="newname">Name</label>
+            <input id="newname" name="name" className="input" placeholder="acme-staging" />
           </div>
           <button className="btn-pri">Create</button>
         </form>

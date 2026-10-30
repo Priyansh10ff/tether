@@ -66,8 +66,8 @@ export default async function EndpointPage({ params, searchParams }: { params: P
           <h2 className="font-semibold">Settings</h2>
           <form action={updateEndpoint} className="mt-3 space-y-3">
             <input type="hidden" name="id" value={ep.id} />
-            <div><label className="block text-xs font-medium text-ink2" htmlFor="description">Description</label><input id="description" name="description" className="input mt-1" defaultValue={ep.description ?? ""} /></div>
-            <div><label className="block text-xs font-medium text-ink2" htmlFor="rate_limit">Rate limit (requests/second)</label><input id="rate_limit" name="rate_limit" type="number" min={1} className="input mt-1 font-mono" defaultValue={ep.rateLimitPerSecond ?? ""} placeholder="none" /></div>
+            <div><label className="lbl" htmlFor="description">Description</label><input id="description" name="description" className="input" defaultValue={ep.description ?? ""} /></div>
+            <div><label className="lbl" htmlFor="rate_limit">Rate limit (requests/second)</label><input id="rate_limit" name="rate_limit" type="number" min={1} className="input font-mono" defaultValue={ep.rateLimitPerSecond ?? ""} placeholder="none" /></div>
             <button className="btn">Save</button>
           </form>
           <dl className="mt-4 grid grid-cols-[150px_1fr] gap-y-1 text-xs">
@@ -82,12 +82,12 @@ export default async function EndpointPage({ params, searchParams }: { params: P
 
       <section className="card mt-5 overflow-x-auto">
         <div className="border-b border-line px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-dim">Recent deliveries</div>
-        <table className="w-full text-sm">
-          <thead className="border-b border-line"><tr><th className="th">Event</th><th className="th">Type</th><th className="th">Status</th><th className="th">Attempts</th><th className="th">Last</th><th className="th">Next</th><th className="th">Created</th></tr></thead>
+        <table className="table">
+          <thead><tr><th className="th">Event</th><th className="th">Type</th><th className="th">Status</th><th className="th">Attempts</th><th className="th">Last</th><th className="th">Next</th><th className="th">Created</th></tr></thead>
           <tbody>
             {recent.length === 0 && <tr><td className="td py-8 text-center text-dim" colSpan={7}>Nothing delivered to this endpoint yet.</td></tr>}
             {recent.map(({ d, type }) => (
-              <tr key={d.id} className="border-b border-line last:border-0 hover:bg-bg">
+              <tr key={d.id}>
                 <td className="td"><Link href={`/events/${d.eventId}`} className="font-mono text-xs hover:text-acc">{d.eventId}</Link></td>
                 <td className="td font-mono text-xs">{type}</td>
                 <td className="td"><DeliveryStatus status={d.status} /></td>

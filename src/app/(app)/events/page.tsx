@@ -66,12 +66,12 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
       </form>
 
       <div className="card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="border-b border-line"><tr><th className="th">Event</th><th className="th">Type</th><th className="th">Endpoint</th><th className="th">Status</th><th className="th">Attempts</th><th className="th">Last</th><th className="th">Next</th><th className="th">Received</th></tr></thead>
+        <table className="table">
+          <thead><tr><th className="th">Event</th><th className="th">Type</th><th className="th">Endpoint</th><th className="th">Status</th><th className="th">Attempts</th><th className="th">Last</th><th className="th">Next</th><th className="th">Received</th></tr></thead>
           <tbody>
             {page.length === 0 && <tr><td className="td py-10 text-center text-dim" colSpan={8}>No deliveries match.</td></tr>}
             {page.map(({ d, type, url }) => (
-              <tr key={d.id} className="border-b border-line last:border-0 hover:bg-bg">
+              <tr key={d.id}>
                 <td className="td"><Link href={`/events/${d.eventId}`} className="font-mono text-xs hover:text-acc">{d.eventId}</Link></td>
                 <td className="td font-mono text-xs">{type}</td>
                 <td className="td max-w-56 truncate font-mono text-xs text-ink2" title={url}>{url.replace(/^https?:\/\//, "")}</td>

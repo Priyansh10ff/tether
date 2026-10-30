@@ -45,18 +45,18 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                   <span className="ml-auto flex items-center gap-2">
                     {d.status === "pending" && <span className="font-mono text-xs text-dim">next <Time d={d.nextAttemptAt} /></span>}
                     {(d.status === "pending" || d.status === "dead" || d.status === "discarded") && (
-                      <form action={replayDelivery}><input type="hidden" name="id" value={d.id} /><button className="btn py-1 text-xs">{d.status === "pending" ? "Retry now" : "Replay"}</button></form>
+                      <form action={replayDelivery}><input type="hidden" name="id" value={d.id} /><button className="btn btn-sm">{d.status === "pending" ? "Retry now" : "Replay"}</button></form>
                     )}
                     {d.status === "dead" && (
-                      <form action={discardDelivery}><input type="hidden" name="id" value={d.id} /><button className="btn-danger py-1 text-xs">Discard</button></form>
+                      <form action={discardDelivery}><input type="hidden" name="id" value={d.id} /><button className="btn-danger btn-sm">Discard</button></form>
                     )}
                   </span>
                 </div>
                 <ol className="divide-y divide-line">
                   {list.length === 0 && <li className="px-4 py-6 text-center text-sm text-dim">No attempts yet.</li>}
                   {list.map((a) => (
-                    <li key={a.id} className="grid gap-x-4 gap-y-1 px-4 py-3 md:grid-cols-[28px_60px_1fr_auto]">
-                      <span className={`mt-1 h-2.5 w-2.5 rounded-full ${a.ok ? "bg-ok" : "bg-bad"}`} aria-hidden />
+                    <li key={a.id} className="grid gap-x-4 gap-y-1 px-4 py-3 md:grid-cols-[14px_36px_1fr_auto] md:items-start">
+                      <span className={`mt-1.5 h-2.5 w-2.5 rounded-full ${a.ok ? "bg-ok" : "bg-bad"}`} aria-hidden />
                       <span className="font-mono text-xs text-dim">#{a.number}</span>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2 text-sm">

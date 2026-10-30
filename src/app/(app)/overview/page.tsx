@@ -69,26 +69,31 @@ export default async function OverviewPage() {
         <Link href="/keys" className="btn-pri">Send a test event</Link>
       </PageHeader>
 
-      <div className="mb-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line md:grid-cols-3 xl:grid-cols-6">
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         {tiles.map((t) => {
+          const tone = t.tone === "bad" ? "text-bad" : t.tone === "warn" ? "text-warn" : t.tone === "ok" ? "text-ok" : "text-ink";
           const inner = (
             <>
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-dim">{t.k}</div>
-              <div className={`tnum mt-1.5 font-mono text-2xl ${t.tone === "bad" ? "text-bad" : t.tone === "warn" ? "text-warn" : ""}`}>{t.v}</div>
-              <div className="mt-0.5 font-mono text-[11px] text-ink2">{t.s}</div>
+              <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[.1em] text-dim">
+                {t.k}
+                {t.tone && <span className={`h-1.5 w-1.5 rounded-full ${t.tone === "bad" ? "bg-bad" : t.tone === "warn" ? "bg-warn" : "bg-ok"}`} />}
+              </div>
+              <div className={`tnum mt-2 font-mono text-[26px] leading-none tracking-tight ${tone}`}>{t.v}</div>
+              <div className="mt-2 truncate text-[12px] text-ink2">{t.s}</div>
             </>
           );
-          return t.href ? <Link key={t.k} href={t.href} className="bg-bg2 p-4 hover:bg-bg">{inner}</Link> : <div key={t.k} className="bg-bg2 p-4">{inner}</div>;
+          const cls = "card p-4 transition hover:-translate-y-px hover:shadow-pop";
+          return t.href ? <Link key={t.k} href={t.href} className={cls}>{inner}</Link> : <div key={t.k} className={cls}>{inner}</div>;
         })}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[3fr_2fr]">
-        <div className="card">
-          <div className="flex items-center border-b border-line px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-dim">
+      <div className="grid items-start gap-4 lg:grid-cols-[3fr_2fr]">
+        <div className="card flex flex-col">
+          <div className="card-h">
             Attempts per hour
-            <span className="ml-auto flex gap-3 normal-case tracking-normal"><span><i className="mr-1.5 inline-block h-2 w-2 bg-ink" />ok</span><span><i className="mr-1.5 inline-block h-2 w-2 bg-bad" />failed</span></span>
+            <span className="ml-auto flex gap-4 normal-case tracking-normal text-ink2"><span className="flex items-center gap-1.5"><i className="inline-block h-2 w-2 rounded-sm bg-ink" />ok</span><span className="flex items-center gap-1.5"><i className="inline-block h-2 w-2 rounded-sm bg-bad" />failed</span></span>
           </div>
-          <div className="p-4"><HourChart buckets={buckets} /></div>
+          <div className="p-5"><HourChart buckets={buckets} /></div>
         </div>
         <LiveFeed projectId={pid} initial={recent.map((r) => ({ ...r, at: r.at.toISOString() }))} />
       </div>

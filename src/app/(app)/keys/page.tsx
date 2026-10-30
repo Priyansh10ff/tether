@@ -51,26 +51,26 @@ export default async function KeysPage() {
 
       <form action={createKey} className="card mb-6 flex flex-wrap items-end gap-3 p-4">
         <div className="min-w-48 flex-1">
-          <label className="block text-xs font-medium text-ink2" htmlFor="name">Name</label>
-          <input id="name" name="name" className="input mt-1" placeholder="backend-prod" />
+          <label className="lbl" htmlFor="name">Name</label>
+          <input id="name" name="name" className="input" placeholder="backend-prod" />
         </div>
         <button className="btn-pri">Create key</button>
       </form>
 
       <div className="card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="border-b border-line"><tr><th className="th">Name</th><th className="th">Key</th><th className="th">Last used</th><th className="th">Created</th><th className="th"></th></tr></thead>
+        <table className="table">
+          <thead><tr><th className="th">Name</th><th className="th">Key</th><th className="th">Last used</th><th className="th">Created</th><th className="th"></th></tr></thead>
           <tbody>
             {rows.length === 0 && <tr><td className="td py-8 text-center text-dim" colSpan={5}>No keys yet. Create one to start sending events.</td></tr>}
             {rows.map((k) => (
-              <tr key={k.id} className="border-b border-line last:border-0">
+              <tr key={k.id}>
                 <td className="td font-medium">{k.name}{k.revokedAt && <span className="pill ml-2 bg-bad/10 text-bad">revoked</span>}</td>
                 <td className="td font-mono text-xs text-ink2">{k.prefix}…</td>
                 <td className="td"><Time d={k.lastUsedAt} /></td>
                 <td className="td"><Time d={k.createdAt} /></td>
                 <td className="td text-right">
                   {!k.revokedAt && (
-                    <form action={revokeKey}><input type="hidden" name="id" value={k.id} /><button className="btn-danger py-1 text-xs">Revoke</button></form>
+                    <form action={revokeKey}><input type="hidden" name="id" value={k.id} /><button className="btn-danger btn-sm">Revoke</button></form>
                   )}
                 </td>
               </tr>

@@ -19,14 +19,14 @@ export function LiveFeed({ projectId, initial }: { projectId: string; initial: R
   }, [projectId]);
 
   return (
-    <div className="card flex h-full flex-col">
-      <div className="flex items-center border-b border-line px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-dim">
+    <div className="card flex flex-col">
+      <div className="card-h">
         Live attempts
         <span className={`ml-auto flex items-center gap-1.5 normal-case tracking-normal ${live ? "text-ok" : "text-dim"}`}>
           <span className={`h-1.5 w-1.5 rounded-full ${live ? "bg-ok" : "bg-dim"}`} />{live ? "streaming" : "connecting"}
         </span>
       </div>
-      <ul className="max-h-[420px] flex-1 overflow-auto font-mono text-[11.5px]">
+      <ul className="max-h-[360px] flex-1 overflow-auto font-mono text-[11.5px]">
         {rows.length === 0 && <li className="px-4 py-8 text-center text-dim">Waiting for the first attempt. Send an event to see it here.</li>}
         {rows.map((r) => (
           <li key={r.id} className="grid grid-cols-[60px_36px_1fr_auto] items-center gap-3 border-b border-line px-4 py-1.5 last:border-0">

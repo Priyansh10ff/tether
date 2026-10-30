@@ -1,30 +1,54 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #f5f6f4;
+  --color-bg: #f4f6fa;
   --color-bg2: #ffffff;
-  --color-ink: #0f1113;
-  --color-ink2: #4b5259;
-  --color-dim: #858d95;
-  --color-line: #dcdfdb;
-  --color-line2: #b9bec0;
-  --color-acc: #1f3cff;
-  --color-ok: #13864f;
-  --color-bad: #d7263d;
-  --color-warn: #c76a00;
+  --color-ink: #0f1218;
+  --color-ink2: #4d5565;
+  --color-dim: #8a93a3;
+  --color-line: #e3e7ee;
+  --color-line2: #c9d0db;
+  --color-acc: #2447ff;
+  --color-acc2: #1a36d6;
+  --color-ok: #138a52;
+  --color-bad: #d9283f;
+  --color-warn: #c46d00;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, Menlo, monospace;
-  --shadow-soft: 0 20px 50px -30px rgba(15, 17, 19, 0.35);
+  --shadow-card: 0 1px 2px rgba(15, 18, 24, 0.04), 0 8px 24px -12px rgba(15, 18, 24, 0.12);
+  --shadow-pop: 0 24px 60px -24px rgba(15, 18, 24, 0.25);
+  --radius-card: 14px;
 }
 
-html, body { background: var(--color-bg); color: var(--color-ink); }
+html { background: #f4f6fa; }
+body {
+  color: var(--color-ink);
+  background:
+    radial-gradient(1200px 600px at -10% -20%, rgba(36, 71, 255, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 110% 0%, rgba(36, 71, 255, 0.05), transparent 55%),
+    linear-gradient(180deg, #ffffff 0%, #f4f6fa 38%, #eef1f7 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
 .tnum { font-variant-numeric: tabular-nums; }
 
-.btn { @apply inline-flex items-center gap-2 rounded-lg border border-line2 bg-bg2 px-3.5 py-2 text-sm font-medium transition hover:border-ink disabled:opacity-50; }
-.btn-pri { @apply inline-flex items-center gap-2 rounded-lg border border-ink bg-ink px-3.5 py-2 text-sm font-medium text-white transition hover:bg-black disabled:opacity-50; }
-.btn-danger { @apply inline-flex items-center gap-2 rounded-lg border border-bad/40 bg-bg2 px-3.5 py-2 text-sm font-medium text-bad transition hover:border-bad; }
-.pill { @apply inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[11px] font-medium; }
-.card { @apply rounded-xl border border-line bg-bg2; }
-.input { @apply w-full rounded-lg border border-line2 bg-bg px-3 py-2 text-sm outline-none focus:border-acc; }
-.th { @apply px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-dim; }
-.td { @apply px-4 py-2.5 align-middle; }
+/* buttons */
+.btn { @apply inline-flex h-9 items-center gap-2 rounded-[10px] border border-line2 bg-bg2 px-3.5 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(15,18,24,.05)] transition hover:border-ink/40 hover:bg-white active:translate-y-px disabled:opacity-50; }
+.btn-pri { @apply inline-flex h-9 items-center gap-2 rounded-[10px] bg-acc px-4 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(36,71,255,.3),inset_0_1px_0_rgba(255,255,255,.18)] transition hover:bg-acc2 active:translate-y-px disabled:opacity-50; }
+.btn-danger { @apply inline-flex h-9 items-center gap-2 rounded-[10px] border border-bad/30 bg-bg2 px-3.5 text-sm font-medium text-bad transition hover:border-bad hover:bg-bad/5 active:translate-y-px; }
+.btn-sm { @apply h-7 px-2.5 text-xs; }
+
+/* surfaces */
+.card { @apply rounded-[14px] border border-line bg-bg2 shadow-card; }
+.card-h { @apply flex items-center gap-3 border-b border-line px-5 py-3 text-[11px] font-semibold uppercase tracking-[.12em] text-dim; }
+.pill { @apply inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-[11px] font-medium; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 9999px; background: currentColor; opacity: .8; }
+.input { @apply h-9 w-full rounded-[10px] border border-line2 bg-bg2 px-3 text-sm text-ink outline-none transition placeholder:text-dim focus:border-acc focus:ring-4 focus:ring-acc/10; }
+textarea.input { @apply h-auto py-2; }
+select.input { @apply pr-8; }
+.th { @apply px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[.1em] text-dim; }
+.td { @apply px-4 py-3 align-middle; }
+.table { @apply w-full text-sm; }
+.table thead { @apply bg-bg/60; }
+.table tbody tr { @apply border-t border-line transition hover:bg-acc/[.025]; }
+label.lbl { @apply mb-1.5 block text-xs font-medium text-ink2; }
