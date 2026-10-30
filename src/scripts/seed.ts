@@ -1,3 +1,4 @@
+import "@/db/env";
 /**
  * Seed a demo project with endpoints, a key and a few hundred realistic deliveries so the
  * dashboard has something to show. Safe to run more than once.
@@ -5,7 +6,7 @@
  *   npm run seed            -> prints the API key to use with the CLI / SDK
  */
 import { eq } from "drizzle-orm";
-import { db, pool } from "@/db";
+import { closeDb, db } from "@/db";
 import { apiKeys, attempts, deliveries, endpoints, events, projects, subscriptions } from "@/db/schema";
 import { newApiKey } from "@/lib/apikeys";
 import { newId } from "@/lib/ids";
@@ -77,7 +78,7 @@ async function main() {
   }
   console.log(`seeded project "${project.name}" with ${epIds.length} endpoints and ${n} deliveries`);
   console.log(`API key (shown once): ${key}`);
-  await pool.end();
+  await closeDb();
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

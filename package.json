@@ -19,6 +19,7 @@
     "seed": "tsx src/scripts/seed.ts"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.3.0",
     "drizzle-orm": "^0.45.4",
     "geist": "^1.5.0",
     "next": "16.4.3",
@@ -29,7 +30,6 @@
     "zod": "^4.1.0"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.3.0",
     "@tailwindcss/postcss": "^4.1.0",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.15.0",
