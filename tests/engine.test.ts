@@ -73,8 +73,7 @@ describe("claim + dispatch", () => {
     const now = () => clock;
 
     for (let i = 1; i <= 7; i++) {
-      // fast-forward so the delivery is due
-      await db.update(deliveries).set({ nextAttemptAt: new Date(0) });
+      await db.update(deliveries).set({ nextAttemptAt: new Date(0) }); // make it due
       const [c] = await claimDeliveries(db, "w1", 1);
       expect(c, `attempt ${i} should be claimable`).toBeTruthy();
       const out = await dispatch(db, c, { workerId: "w1", timeoutMs: 1000, fetcher, now });
@@ -82,7 +81,7 @@ describe("claim + dispatch", () => {
       expect(out.final).toBe(i < 7 ? "pending" : "dead");
       if (i < 7) {
         const [d] = await db.select().from(deliveries);
-        expect(d.nextAttemptAt.getTime()).toBeGreaterThan(clock); // scheduled in the future
+        expect(d.nextAttemptAt.getTime()).toBeGreaterThan(clock);
       }
       clock += 1000;
     }
@@ -121,7 +120,6 @@ describe("claim + dispatch", () => {
     await ingestEvent(db, { projectId, type: "order.paid", payload: {}, orderingKey: "cust_2" });
 
     const first = await claimDeliveries(db, "w1", 10);
-    // one per key: cust_1's first delivery and cust_2's only delivery
     expect(first.map((d) => d.orderingKey).sort()).toEqual(["cust_1", "cust_2"]);
     const { fetcher } = fakeFetch([200]);
     for (const d of first) await dispatch(db, d, { workerId: "w1", timeoutMs: 1000, fetcher });

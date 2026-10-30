@@ -8,22 +8,19 @@ describe("signing", () => {
   it("round-trips a valid signature", () => {
     const now = 1_761_734_400_000;
     const h = buildHeaders({ deliveryId: "dlv_1", attempt: 1, body, secrets: [secret], now });
-    const r = verifySignature({ secret, body, timestamp: h["tether-timestamp"], signature: h["tether-signature"], now });
-    expect(r).toEqual({ ok: true });
+    expect(verifySignature({ secret, body, timestamp: h["tether-timestamp"], signature: h["tether-signature"], now })).toEqual({ ok: true });
   });
 
   it("rejects a tampered body", () => {
     const now = Date.now();
     const h = buildHeaders({ deliveryId: "dlv_1", attempt: 1, body, secrets: [secret], now });
-    const r = verifySignature({ secret, body: body + " ", timestamp: h["tether-timestamp"], signature: h["tether-signature"], now });
-    expect(r).toEqual({ ok: false, reason: "mismatch" });
+    expect(verifySignature({ secret, body: body + " ", timestamp: h["tether-timestamp"], signature: h["tether-signature"], now })).toEqual({ ok: false, reason: "mismatch" });
   });
 
   it("rejects an old timestamp (replay)", () => {
     const then = Date.now() - 10 * 60 * 1000;
     const h = buildHeaders({ deliveryId: "dlv_1", attempt: 1, body, secrets: [secret], now: then });
-    const r = verifySignature({ secret, body, timestamp: h["tether-timestamp"], signature: h["tether-signature"] });
-    expect(r).toEqual({ ok: false, reason: "expired" });
+    expect(verifySignature({ secret, body, timestamp: h["tether-timestamp"], signature: h["tether-signature"] })).toEqual({ ok: false, reason: "expired" });
   });
 
   it("accepts the previous secret during rotation", () => {
