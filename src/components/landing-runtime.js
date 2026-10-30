@@ -110,7 +110,7 @@ for(let i=0;i<8;i++)line();iv(line,reduce?3000:900);
 
 /* ---------- pinned lifecycle ---------- */
 (function(){
-  const life=$("#how"),pk=$("#pk"),rail=$("#railfill"),rbox=$("#rbox"),rcode=$("#rcode"),pill=$("#pill"),pillt=$("#pillt"),shelf=$("#shelf"),parked=$("#parked"),lt=$("#lt"),ls=$("#ls"),foot=$("#lfoot"),ph=[...$("#phase").children],att=$("#att");
+  const life=$("#how"),logRows=[...document.querySelectorAll("#loglist li")],pk=$("#pk"),rail=$("#railfill"),rbox=$("#rbox"),rcode=$("#rcode"),pill=$("#pill"),pillt=$("#pillt"),shelf=$("#shelf"),parked=$("#parked"),lt=$("#lt"),ls=$("#ls"),foot=$("#lfoot"),ph=[...$("#phase").children],att=$("#att");
   const X0=120,X1=1080,SH=330;
   const STEPS=[["Your app sends one event.","POST /v1/events with an idempotency key. Tether stores it once and fans it out to every endpoint subscribed to that type."],
    ["The receiver is down. Tether turns around.","503. The attempt is recorded with status, latency and body. The next one is scheduled with jittered backoff and the worker moves on. Nothing blocks."],
@@ -139,6 +139,11 @@ for(let i=0;i<8;i++)line();iv(line,reduce?3000:900);
     shelf.setAttribute("opacity",t.step>=3?"1":"0");parked.setAttribute("opacity",t.parkedNow?"1":"0");
     for(let i=0;i<7;i++){const g=document.getElementById("a"+i),c=document.getElementById("ac"+i);const done=i<t.attempt-1;g.setAttribute("opacity",done||i===t.attempt-1?"1":".35");c.textContent=done?"503":(i===t.attempt-1&&t.ok?"200":(i===t.attempt-1?"…":" "));c.setAttribute("fill",done?"#d7263d":t.ok?"#13864f":"#858d95")}
     foot.textContent=t.ok?"attempt 8 · delivered · 200 OK":t.parkedNow?"dead-letter queue · 1 · replay available":`attempt ${Math.min(t.attempt,7)} of 7 · ${t.rt?t.rt:t.down?"503":"in flight"}`;
+    for(const li of logRows){const n=+li.dataset.n;const em=li.querySelector("em");let state="";
+      if(n<=7){ if(n<t.attempt) state="fail"; else if(n===t.attempt) state=t.ok?"ok":(t.down&&!t.rt?"fail":"live"); }
+      else { state=t.parkedNow?"live":(t.step>=4?"fail":""); }
+      li.className=(state?state:"")+(n===8?" dlq":"");
+      em.textContent=state==="fail"?(n===8?"replayed":"503"):state==="ok"?"200 OK":state==="live"?(n===8?"parked":(t.rt||"in flight")):"";}
     if(t.step!==cur){cur=t.step;lt.textContent=STEPS[cur][0];ls.textContent=STEPS[cur][1];ph.forEach((e,i)=>e.classList.toggle("on",i<=cur))}
   }
   on("scroll",place,{passive:true});on("resize",place);place();

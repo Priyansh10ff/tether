@@ -66,7 +66,7 @@ export default async function OverviewPage() {
     <div>
       <PageHeader title="Overview" sub={`${project.name} · last 24 hours`}>
         <Link href="/endpoints" className="btn">Endpoints</Link>
-        <Link href="/keys" className="btn-pri">Send a test event</Link>
+        <Link href="/send" className="btn-pri">Send a test event</Link>
       </PageHeader>
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

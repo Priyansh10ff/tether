@@ -42,26 +42,34 @@ export default function LandingPage() {
             <div><span className="kicker">01 — Delivery lifecycle · scroll to advance</span><h2 id="lt">Your app sends one event.</h2><p className="sub" id="ls">POST /v1/events with an idempotency key. Tether stores it once and fans it out to every endpoint subscribed to that type.</p></div>
             <div className="phase" id="phase"><i className="on"></i><i></i><i></i><i></i><i></i></div>
           </div></div>
-          <div className="stage">
-            <svg viewBox="0 0 1200 420" preserveAspectRatio="xMidYMin meet" aria-hidden="true">
-              {/* rail */}
-              <line x1="120" y1="200" x2="1080" y2="200" stroke="#dcdfdb" strokeWidth="2"></line>
-              <line id="railfill" x1="120" y1="200" x2="120" y2="200" stroke="#0f1113" strokeWidth="2"></line>
-              {/* attempt timeline below */}
-              <g id="att"></g>
-              {/* source */}
-              <g transform="translate(120 200)"><rect x="-44" y="-30" width="88" height="60" rx="12" fill="#fff" stroke="#0f1113" strokeWidth="1.5"></rect><text y="5" textAnchor="middle" className="lab ink">tether</text><text y="-44" textAnchor="middle" className="tiny">WORKER 2 · CLAIMED</text></g>
-              {/* dead letter shelf */}
-              <g id="shelf" transform="translate(120 330)" opacity="0"><rect x="-44" y="-16" width="124" height="32" rx="8" fill="#fff" stroke="#b9bec0" strokeDasharray="4 4"></rect><text x="-32" y="4" className="tiny">DEAD-LETTER</text><rect id="parked" x="54" y="-7" width="14" height="14" rx="3" fill="#d7263d" opacity="0"></rect></g>
-              {/* receiver */}
-              <g transform="translate(1080 200)"><rect id="rbox" x="-56" y="-30" width="112" height="60" rx="12" fill="#fff" stroke="#0f1113" strokeWidth="1.5"></rect><text y="5" textAnchor="middle" className="lab ink">api.acme.com</text><text id="rcode" y="-44" textAnchor="middle" className="tiny">200 OK · 142 ms</text></g>
-              {/* retry pill */}
-              <g id="pill" transform="translate(600 120)" opacity="0"><rect x="-96" y="-22" width="192" height="44" rx="22" fill="#0f1113"></rect><text id="pillt" y="6" textAnchor="middle" fontFamily="Geist Mono,monospace" fontSize="14" fill="#fff">retry in 5 s</text></g>
-              {/* packet */}
-              <g id="pk" transform="translate(120 200)"><rect x="-9" y="-9" width="18" height="18" rx="4" fill="#1f3cff"></rect></g>
-            </svg>
-          </div>
-          <div className="foot" id="lfoot">attempt 1 · in flight</div>
+          <div className="body"><div className="wrap body-grid">
+            <div className="stage">
+              <svg viewBox="40 70 1120 290" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <line x1="120" y1="190" x2="1080" y2="190" stroke="#dcdfdb" strokeWidth="2"></line>
+                <line id="railfill" x1="120" y1="190" x2="120" y2="190" stroke="#0f1113" strokeWidth="2"></line>
+                <g id="att"></g>
+                <g transform="translate(120 190)"><rect x="-44" y="-30" width="88" height="60" rx="12" fill="#fff" stroke="#0f1113" strokeWidth="1.5"></rect><text y="5" textAnchor="middle" className="lab ink">tether</text><text y="-44" textAnchor="middle" className="tiny">WORKER 2 · CLAIMED</text></g>
+                <g id="shelf" transform="translate(120 320)" opacity="0"><rect x="-44" y="-16" width="124" height="32" rx="8" fill="#fff" stroke="#b9bec0" strokeDasharray="4 4"></rect><text x="-32" y="4" className="tiny">DEAD-LETTER</text><rect id="parked" x="54" y="-7" width="14" height="14" rx="3" fill="#d7263d" opacity="0"></rect></g>
+                <g transform="translate(1080 190)"><rect id="rbox" x="-56" y="-30" width="112" height="60" rx="12" fill="#fff" stroke="#0f1113" strokeWidth="1.5"></rect><text y="5" textAnchor="middle" className="lab ink">api.acme.com</text><text id="rcode" y="-44" textAnchor="middle" className="tiny">200 OK · 142 ms</text></g>
+                <g id="pill" transform="translate(600 110)" opacity="0"><rect x="-96" y="-22" width="192" height="44" rx="22" fill="#0f1113"></rect><text id="pillt" y="6" textAnchor="middle" fontFamily="Geist Mono,monospace" fontSize="14" fill="#fff">retry in 5 s</text></g>
+                <g id="pk" transform="translate(120 190)"><rect x="-9" y="-9" width="18" height="18" rx="4" fill="#1f3cff"></rect></g>
+              </svg>
+            </div>
+            <aside className="log" aria-label="Attempt log">
+              <div className="log-h"><span>attempt log</span><span id="lfoot">attempt 1 · in flight</span></div>
+              <ol id="loglist">
+                <li data-n="1"><b>#1</b><span>now</span><em>in flight</em></li>
+                <li data-n="2"><b>#2</b><span>+5 s</span><em></em></li>
+                <li data-n="3"><b>#3</b><span>+30 s</span><em></em></li>
+                <li data-n="4"><b>#4</b><span>+2 min</span><em></em></li>
+                <li data-n="5"><b>#5</b><span>+10 min</span><em></em></li>
+                <li data-n="6"><b>#6</b><span>+1 h</span><em></em></li>
+                <li data-n="7"><b>#7</b><span>+6 h</span><em></em></li>
+                <li data-n="8" className="dlq"><b>DLQ</b><span>parked</span><em></em></li>
+              </ol>
+            </aside>
+          </div></div>
+          <div className="foot hint">scroll to advance · drag the scrollbar to scrub</div>
         </div>
       </section>
       
