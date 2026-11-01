@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="docs/overview.png" alt="Tether dashboard: delivery metrics, attempts per hour, per-endpoint health and a live attempt feed" width="900">
-</p>
-
 <h1 align="center">Tether</h1>
 
 <p align="center">
@@ -18,6 +14,10 @@
 </p>
 
 ---
+
+<p align="center">
+  <img src="docs/overview.png" alt="Tether dashboard: delivery metrics, attempts per hour, per-endpoint health and a live attempt feed" width="900">
+</p>
 
 ## Quick start
 
