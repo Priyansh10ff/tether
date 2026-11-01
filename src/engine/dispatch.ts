@@ -4,6 +4,7 @@ import { newId } from "@/lib/ids";
 import { buildHeaders } from "@/lib/signing";
 import { isRetryableStatus, isSuccessStatus, nextAttemptAt, shouldDeadLetter } from "@/lib/retry";
 import { nextProbeAt, shouldOpen } from "@/lib/breaker";
+import { assertResolvesPublic } from "@/lib/urlsafety";
 import type { Db } from "@/db";
 import type { ClaimedDelivery } from "./claim";
 
@@ -19,6 +20,25 @@ export type DispatchOutcome = {
 };
 
 const BODY_LIMIT = 4096;
+
+/** Read at most `limit` bytes of a response body, then cancel the stream so a hostile receiver cannot pin a worker. */
+async function readCapped(res: Response, limit: number) {
+  if (!res.body) return "";
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (total < limit) {
+      const { done, value } = await reader.read();
+      if (done || !value) break;
+      chunks.push(value);
+      total += value.length;
+    }
+  } finally {
+    reader.cancel().catch(() => {});
+  }
+  return Buffer.concat(chunks).toString("utf8").slice(0, limit);
+}
 
 /** Send one claimed delivery, record the attempt, and decide what happens next. */
 export async function dispatch(
@@ -51,9 +71,10 @@ export async function dispatch(
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs);
   try {
+    await assertResolvesPublic(new URL(endpoint.url));
     const res = await fetcher(endpoint.url, { method: "POST", headers, body, signal: ctrl.signal, redirect: "manual" });
     statusCode = res.status;
-    responseBody = (await res.text().catch(() => "")).slice(0, BODY_LIMIT);
+    responseBody = await readCapped(res, BODY_LIMIT);
   } catch (err) {
     error = err instanceof Error ? (err.name === "AbortError" ? `timeout after ${opts.timeoutMs}ms` : err.message) : String(err);
   } finally {
