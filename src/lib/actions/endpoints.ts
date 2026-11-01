@@ -111,3 +111,10 @@ export async function pingEndpoint(formData: FormData) {
   await audit(db, { projectId: ep.projectId, actor: "admin", action: "event.send", target: eventId, detail: { type: "tether.ping", endpoint: ep.id } });
   redirect(`/events/${eventId}`);
 }
+
+/** Return the current signing secret for an endpoint the admin owns. Audited. */
+export async function revealSecret(id: string): Promise<string> {
+  const ep = await owned(id);
+  await audit(db, { projectId: ep.projectId, actor: "admin", action: "endpoint.reveal_secret", target: ep.id });
+  return ep.secret;
+}

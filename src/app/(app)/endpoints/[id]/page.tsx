@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { attempts, deliveries, endpoints, events, subscriptions } from "@/db/schema";
 import { currentProject } from "@/lib/project";
-import { deleteEndpoint, pingEndpoint, rotateSecret, setEndpointState, updateEndpoint, updateSubscriptions } from "@/lib/actions/endpoints";
+import { deleteEndpoint, pingEndpoint, revealSecret, rotateSecret, setEndpointState, updateEndpoint, updateSubscriptions } from "@/lib/actions/endpoints";
+import { SecretReveal } from "@/components/secret-reveal";
 import { PageHeader } from "@/components/page-header";
 import { Code, DeliveryStatus, EndpointState } from "@/components/pills";
 import { Time } from "@/components/time";
@@ -46,7 +47,7 @@ export default async function EndpointPage({ params, searchParams }: { params: P
       <div className="grid gap-5 lg:grid-cols-3">
         <section className="card p-5">
           <h2 className="font-semibold">Signing secret</h2>
-          <code className="mt-2 block select-all break-all rounded-md bg-bg px-3 py-2 font-mono text-xs">{ep.secret}</code>
+          <div className="mt-2"><SecretReveal reveal={revealSecret.bind(null, ep.id)} masked={ep.secret.slice(0, 10) + "•".repeat(22)} /></div>
           {ep.previousSecret && ep.previousSecretExpiresAt && ep.previousSecretExpiresAt > new Date() && (
             <p className="mt-2 text-xs text-ink2">Previous secret still accepted until <Time d={ep.previousSecretExpiresAt} />. Deliveries carry both signatures.</p>
           )}

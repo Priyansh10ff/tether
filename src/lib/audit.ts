@@ -3,7 +3,7 @@ import { newId } from "./ids";
 import type { Db } from "@/db";
 
 export type AuditAction =
-  | "endpoint.create" | "endpoint.update" | "endpoint.delete" | "endpoint.pause" | "endpoint.resume" | "endpoint.rotate_secret" | "endpoint.subscriptions"
+  | "endpoint.create" | "endpoint.update" | "endpoint.delete" | "endpoint.pause" | "endpoint.resume" | "endpoint.rotate_secret" | "endpoint.reveal_secret" | "endpoint.subscriptions"
   | "key.create" | "key.revoke"
   | "delivery.replay" | "delivery.replay_all" | "delivery.discard"
   | "project.create" | "project.rename" | "event.send";
