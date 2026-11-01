@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { ingestEvent } from "@/engine";
 import { authenticateApiKey } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 export const runtime = "nodejs";
 
@@ -17,9 +18,14 @@ export async function POST(req: Request) {
   const auth = await authenticateApiKey(db, req.headers.get("authorization"));
   if (!auth) return NextResponse.json({ error: "invalid or missing API key" }, { status: 401 });
 
+  const limit = env().MAX_EVENT_BYTES;
+  const declared = Number(req.headers.get("content-length") ?? 0);
+  if (declared > limit) return NextResponse.json({ error: `body exceeds ${limit} bytes` }, { status: 413 });
+  const raw = await req.text();
+  if (Buffer.byteLength(raw) > limit) return NextResponse.json({ error: `body exceeds ${limit} bytes` }, { status: 413 });
   let json: unknown;
   try {
-    json = await req.json();
+    json = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "body must be JSON" }, { status: 400 });
   }
