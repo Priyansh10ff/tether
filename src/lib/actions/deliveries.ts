@@ -39,3 +39,15 @@ export async function discardDelivery(formData: FormData) {
   await audit(db, { projectId: project.id, actor: "admin", action: "delivery.discard", target: String(formData.get("id")) });
   revalidatePath("/", "layout");
 }
+
+/** Skip the backoff wait for everything currently retrying in this project. */
+export async function retryAllWaiting() {
+  const { project } = await currentProject();
+  const rows = await db
+    .update(deliveries)
+    .set({ nextAttemptAt: new Date() })
+    .where(and(eq(deliveries.projectId, project.id), eq(deliveries.status, "pending")))
+    .returning({ id: deliveries.id });
+  await audit(db, { projectId: project.id, actor: "admin", action: "delivery.replay_all", detail: { scope: "waiting", count: rows.length } });
+  revalidatePath("/", "layout");
+}

@@ -6,6 +6,8 @@ import { currentProject } from "@/lib/project";
 import { PageHeader } from "@/components/page-header";
 import { DeliveryStatus, Code } from "@/components/pills";
 import { Time } from "@/components/time";
+import { RowLink } from "@/components/row-link";
+import { retryAllWaiting } from "@/lib/actions/deliveries";
 
 export const metadata = { title: "Events" };
 
@@ -47,7 +49,11 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
 
   return (
     <div>
-      <PageHeader title="Events" sub="One row per delivery: an event to one endpoint." />
+      <PageHeader title="Events" sub="One row per delivery: an event to one endpoint.">
+        {status === "pending" && page.length > 0 && (
+          <form action={retryAllWaiting}><button className="btn">Retry all waiting now</button></form>
+        )}
+      </PageHeader>
       <form className="mb-4 flex flex-wrap items-center gap-2" method="get">
         <div className="flex rounded-lg border border-line2 bg-bg2 p-0.5">
           {STATUSES.map((s) => (
@@ -71,8 +77,8 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
           <tbody>
             {page.length === 0 && <tr><td className="td py-10 text-center text-dim" colSpan={8}>No deliveries match.</td></tr>}
             {page.map(({ d, type, url }) => (
-              <tr key={d.id}>
-                <td className="td"><Link href={`/events/${d.eventId}`} className="font-mono text-xs hover:text-acc">{d.eventId}</Link></td>
+              <RowLink key={d.id} href={`/events/${d.eventId}`}>
+                <td className="td"><span className="font-mono text-xs text-acc">{d.eventId}</span></td>
                 <td className="td font-mono text-xs">{type}</td>
                 <td className="td max-w-56 truncate font-mono text-xs text-ink2" title={url}>{url.replace(/^https?:\/\//, "")}</td>
                 <td className="td"><DeliveryStatus status={d.status} /></td>
@@ -80,7 +86,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                 <td className="td"><Code code={d.lastStatusCode} error={d.lastError} /></td>
                 <td className="td">{d.status === "pending" ? <Time d={d.nextAttemptAt} /> : <span className="text-dim">—</span>}</td>
                 <td className="td"><Time d={d.createdAt} /></td>
-              </tr>
+              </RowLink>
             ))}
           </tbody>
         </table>
