@@ -1,7 +1,7 @@
 import { and, desc, eq, gt, sql } from "drizzle-orm";
 import Link from "next/link";
 import { db } from "@/db";
-import { attempts, deliveries, endpoints, events } from "@/db/schema";
+import { attempts, deliveries, endpoints, events, workers } from "@/db/schema";
 import { currentProject } from "@/lib/project";
 import { PageHeader } from "@/components/page-header";
 import { LiveFeed } from "@/components/live-feed";
@@ -16,7 +16,7 @@ export default async function OverviewPage() {
   const since = new Date(Date.now() - 24 * 3600 * 1000);
   const pid = project.id;
 
-  const [[a], [d], [circuit], [oldestDead], hours, recent] = await Promise.all([
+  const [[a], [d], [circuit], [oldestDead], hours, recent, live] = await Promise.all([
     db.select({
       total: sql<number>`count(*)`,
       ok: sql<number>`count(*) filter (where ${attempts.ok})`,
@@ -41,6 +41,7 @@ export default async function OverviewPage() {
     db.select({ id: attempts.id, at: attempts.startedAt, code: attempts.statusCode, ok: attempts.ok, ms: attempts.durationMs, number: attempts.number, error: attempts.error, type: events.type, url: endpoints.url, eventId: events.id })
       .from(attempts).innerJoin(deliveries, eq(deliveries.id, attempts.deliveryId)).innerJoin(events, eq(events.id, deliveries.eventId)).innerJoin(endpoints, eq(endpoints.id, deliveries.endpointId))
       .where(eq(deliveries.projectId, pid)).orderBy(desc(attempts.startedAt)).limit(25),
+    db.select({ id: workers.id, hostname: workers.hostname, concurrency: workers.concurrency, beat: workers.heartbeatAt, delivered: workers.delivered, failed: workers.failed }).from(workers).where(gt(workers.heartbeatAt, new Date(Date.now() - 30_000))),
   ]);
 
   // 24 hourly buckets ending now, zero-filled
@@ -61,10 +62,15 @@ export default async function OverviewPage() {
     { k: "Dead-lettered", v: Number(d.dead).toLocaleString(), s: oldestDead?.at ? `oldest ${ago(oldestDead.at)}` : "queue empty", tone: Number(d.dead) ? "bad" : undefined, href: "/dead-letters" },
     { k: "Circuit open", v: String(Number(circuit.n)), s: Number(circuit.n) ? "endpoints being probed" : "all endpoints healthy", tone: Number(circuit.n) ? "bad" : undefined, href: "/endpoints" },
   ];
+  const workerCount = live.length;
+  const slots = live.reduce((n, w) => n + w.concurrency, 0);
 
   return (
     <div>
       <PageHeader title="Overview" sub={`${project.name} · last 24 hours`}>
+        <span className={`pill ${workerCount ? "bg-ok/10 text-ok" : "bg-bad/10 text-bad"}`} title={live.map((w) => `${w.id} on ${w.hostname}`).join("\n")}>
+          {workerCount ? `${workerCount} worker${workerCount === 1 ? "" : "s"} · ${slots} slots` : "no worker running"}
+        </span>
         <Link href="/endpoints" className="btn">Endpoints</Link>
         <Link href="/send" className="btn-pri">Send a test event</Link>
       </PageHeader>
