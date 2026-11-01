@@ -57,6 +57,7 @@ export const endpoints = pgTable(
     previousSecretExpiresAt: ts("previous_secret_expires_at"),
     state: endpointState("state").notNull().default("active"),
     rateLimitPerSecond: integer("rate_limit_per_second"),
+    maxAttempts: integer("max_attempts"), // null = project default (7)
     consecutiveFailures: integer("consecutive_failures").notNull().default(0),
     breakerOpenedAt: ts("breaker_opened_at"),
     breakerProbeAt: ts("breaker_probe_at"),
@@ -145,3 +146,32 @@ export type Endpoint = typeof endpoints.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type Delivery = typeof deliveries.$inferSelect;
 export type Attempt = typeof attempts.$inferSelect;
+
+// Who did what in the dashboard or API. Append-only.
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id").references(() => projects.id, { onDelete: "cascade" }),
+    actor: text("actor").notNull(), // "admin" | "api:<key prefix>" | "system"
+    action: text("action").notNull(), // e.g. endpoint.create, delivery.replay
+    target: text("target"), // id of the thing acted on
+    detail: jsonb("detail"),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("audit_project_created_idx").on(t.projectId, t.createdAt)],
+);
+
+// Live workers. A row is touched every few seconds; stale rows mean a dead worker.
+export const workers = pgTable("workers", {
+  id: text("id").primaryKey(),
+  hostname: text("hostname").notNull(),
+  concurrency: integer("concurrency").notNull(),
+  startedAt: ts("started_at").notNull().defaultNow(),
+  heartbeatAt: ts("heartbeat_at").notNull().defaultNow(),
+  delivered: integer("delivered").notNull().default(0),
+  failed: integer("failed").notNull().default(0),
+});
+
+export type AuditEntry = typeof auditLog.$inferSelect;
+export type Worker = typeof workers.$inferSelect;
