@@ -9,6 +9,7 @@ import { SecretReveal } from "@/components/secret-reveal";
 import { PageHeader } from "@/components/page-header";
 import { Code, DeliveryStatus, EndpointState } from "@/components/pills";
 import { Time } from "@/components/time";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 export default async function EndpointPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string }> }) {
   const { id } = await params;
@@ -28,6 +29,7 @@ export default async function EndpointPage({ params, searchParams }: { params: P
 
   return (
     <div>
+      <AutoRefresh ms={3000} />
       <PageHeader title={ep.url} sub={ep.description ?? undefined}>
         <EndpointState state={ep.state} />
         <form action={pingEndpoint}><input type="hidden" name="id" value={ep.id} /><button className="btn" title="Queue a tether.ping delivery to this endpoint">Send ping</button></form>

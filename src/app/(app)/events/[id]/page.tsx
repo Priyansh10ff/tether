@@ -8,6 +8,7 @@ import { discardDelivery, replayDelivery } from "@/lib/actions/deliveries";
 import { PageHeader } from "@/components/page-header";
 import { Code, DeliveryStatus } from "@/components/pills";
 import { Time } from "@/components/time";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -28,6 +29,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div>
+      <AutoRefresh ms={2000} />
       <PageHeader title={event.type} sub={event.id}>
         <Link href="/events" className="btn">← All events</Link>
       </PageHeader>

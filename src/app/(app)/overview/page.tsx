@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import { LiveFeed } from "@/components/live-feed";
 import { HourChart } from "@/components/hour-chart";
 import { ago } from "@/components/time";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 export const metadata = { title: "Overview" };
 export const dynamic = "force-dynamic";
@@ -74,6 +75,7 @@ export default async function OverviewPage() {
 
   return (
     <div>
+      <AutoRefresh ms={10000} />
       <PageHeader title="Overview" sub={`${project.name} · last 24 hours`}>
         <span className={`pill ${workerCount ? "bg-ok/10 text-ok" : "bg-bad/10 text-bad"}`} title={live.map((w) => `${w.id} on ${w.hostname}`).join("\n")}>
           {workerCount ? `${workerCount} worker${workerCount === 1 ? "" : "s"} · ${slots} slots` : "no worker running"}

@@ -6,6 +6,7 @@ import { currentProject } from "@/lib/project";
 import { PageHeader } from "@/components/page-header";
 import { DeliveryStatus, Code } from "@/components/pills";
 import { Time } from "@/components/time";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { RowLink } from "@/components/row-link";
 import { retryAllWaiting } from "@/lib/actions/deliveries";
 
@@ -49,6 +50,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
 
   return (
     <div>
+      <AutoRefresh ms={5000} />
       <PageHeader title="Events" sub="One row per delivery: an event to one endpoint.">
         {status === "pending" && page.length > 0 && (
           <form action={retryAllWaiting}><button className="btn">Retry all waiting now</button></form>

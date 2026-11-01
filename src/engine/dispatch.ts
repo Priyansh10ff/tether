@@ -125,17 +125,19 @@ export async function dispatch(
         .set({ consecutiveFailures: 0, state: sql`case when ${endpoints.state} = 'open' then 'active' else ${endpoints.state} end`, breakerOpenedAt: null, breakerProbeAt: null })
         .where(eq(endpoints.id, endpoint.id));
     } else if (statusCode === null || statusCode >= 500) {
-      const failures = endpoint.consecutiveFailures + 1;
-      const open = endpoint.state === "open" || shouldOpen(failures);
-      await tx
+      // Atomic increment: parallel dispatches to the same endpoint must not lose counts.
+      const [row] = await tx
         .update(endpoints)
-        .set({
-          consecutiveFailures: failures,
-          state: open && endpoint.state !== "paused" ? "open" : endpoint.state,
-          breakerOpenedAt: open ? (endpoint.breakerOpenedAt ?? nowDate) : null,
-          breakerProbeAt: open ? nextProbeAt(now()) : null,
-        })
-        .where(eq(endpoints.id, endpoint.id));
+        .set({ consecutiveFailures: sql`${endpoints.consecutiveFailures} + 1` })
+        .where(eq(endpoints.id, endpoint.id))
+        .returning({ failures: endpoints.consecutiveFailures, state: endpoints.state });
+      const open = row.state === "open" || shouldOpen(row.failures);
+      if (open && row.state !== "paused") {
+        await tx
+          .update(endpoints)
+          .set({ state: "open", breakerOpenedAt: sql`coalesce(${endpoints.breakerOpenedAt}, now())`, breakerProbeAt: nextProbeAt(now()) })
+          .where(eq(endpoints.id, endpoint.id));
+      }
     }
   });
 

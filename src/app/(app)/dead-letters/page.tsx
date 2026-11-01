@@ -7,6 +7,7 @@ import { discardDelivery, replayAllDead, replayDelivery } from "@/lib/actions/de
 import { PageHeader } from "@/components/page-header";
 import { Code } from "@/components/pills";
 import { Time } from "@/components/time";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 export const metadata = { title: "Dead letters" };
 
@@ -31,6 +32,7 @@ export default async function DeadLettersPage() {
 
   return (
     <div>
+      <AutoRefresh ms={5000} />
       <PageHeader title="Dead letters" sub="Deliveries that exhausted every attempt or hit a non-retryable response. Nothing here is lost.">
         {rows.length > 0 && (
           <form action={replayAllDead}><button className="btn-pri">Replay all {rows.length}</button></form>
