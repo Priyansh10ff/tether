@@ -19,6 +19,7 @@ const Schema = z.object({
   RETENTION_EVENT_DAYS: z.coerce.number().int().min(1).default(30),
   MAX_EVENT_BYTES: z.coerce.number().int().min(1024).default(256 * 1024),
   ALLOW_PRIVATE_ENDPOINTS: z.enum(["0", "1"]).default(isProd ? "0" : "1"),
+  INGEST_RATE_PER_KEY: z.coerce.number().int().min(1).default(1000), // requests per second per API key
   LOGIN_MAX_ATTEMPTS: z.coerce.number().int().min(1).default(10),
   LOGIN_WINDOW_MS: z.coerce.number().int().min(1000).default(15 * 60_000),
 });

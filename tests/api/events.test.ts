@@ -72,3 +72,23 @@ describe("POST /v1/events", () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe("per-key rate limit", () => {
+  it("answers 429 with Retry-After once the per-second budget is spent", async () => {
+    const { resetRateLimits } = await import("@/lib/ratelimit");
+    const { resetEnvCache } = await import("@/lib/env");
+    resetRateLimits();
+    process.env.INGEST_RATE_PER_KEY = "3"; resetEnvCache();
+    try {
+      const codes = [];
+      for (let i = 0; i < 5; i++) codes.push((await post({ type: "order.paid", data: { i } })).status);
+      expect(codes.slice(0, 3).every((c) => c === 202)).toBe(true);
+      expect(codes[3]).toBe(429);
+      const res = await post({ type: "order.paid", data: {} });
+      expect(res.headers.get("retry-after")).toMatch(/^\d+$/);
+      expect(res.headers.get("x-request-id")).toBeTruthy();
+    } finally {
+      delete process.env.INGEST_RATE_PER_KEY; resetEnvCache(); resetRateLimits();
+    }
+  });
+});
