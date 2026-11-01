@@ -20,7 +20,7 @@ describe("circuit breaker", () => {
     const { projectId, endpointId } = await seedProject(db);
     for (let i = 0; i < BREAKER_THRESHOLD + 3; i++) await ingestEvent(db, { projectId, type: "order.paid", payload: { i } });
     const { fetcher } = fakeFetch([503]);
-    let clock = Date.now();
+    const clock = Date.now();
     const now = () => clock;
 
     // Burn through the threshold: each claimed delivery fails once.
