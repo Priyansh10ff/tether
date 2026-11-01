@@ -7,6 +7,7 @@ import { endpoints, subscriptions } from "@/db/schema";
 import { newId } from "@/lib/ids";
 import { currentProject } from "@/lib/project";
 import { newEndpointSecret } from "@/lib/signing";
+import { checkEndpointUrl } from "@/lib/urlsafety";
 
 function parseTypes(raw: string) {
   return [...new Set(raw.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean))];
@@ -15,11 +16,8 @@ function parseTypes(raw: string) {
 export async function createEndpoint(formData: FormData) {
   const { project } = await currentProject();
   const url = String(formData.get("url") ?? "").trim();
-  let valid = false;
-  try {
-    valid = /^https?:$/.test(new URL(url).protocol);
-  } catch {}
-  if (!valid) redirect("/endpoints?error=url");
+  const check = checkEndpointUrl(url);
+  if (!check.ok) redirect("/endpoints?error=" + encodeURIComponent(check.reason));
   const types = parseTypes(String(formData.get("types") ?? "*"));
   const id = newId.endpoint();
   const rl = Number(formData.get("rate_limit"));

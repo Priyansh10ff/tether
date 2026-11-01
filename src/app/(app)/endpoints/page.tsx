@@ -38,7 +38,7 @@ export default async function EndpointsPage({ searchParams }: { searchParams: Pr
         <div>
           <label className="lbl" htmlFor="url">URL</label>
           <input id="url" name="url" required className="input font-mono text-xs" placeholder="https://api.acme.com/hooks/tether" />
-          {error === "url" && <p className="mt-1 text-xs text-bad">Must be an http(s) URL.</p>}
+          {error && <p className="mt-1 text-xs text-bad">{error}</p>}
         </div>
         <div>
           <label className="lbl" htmlFor="types">Event types</label>
