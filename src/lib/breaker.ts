@@ -3,8 +3,10 @@
  * After THRESHOLD consecutive failures (5xx or network/timeout) the endpoint is marked `open`.
  * While open, the worker sends one probe delivery per PROBE_INTERVAL. The first 2xx closes it.
  */
-export const BREAKER_THRESHOLD = Number(process.env.BREAKER_THRESHOLD ?? 10);
-export const BREAKER_PROBE_MS = Number(process.env.BREAKER_PROBE_MS ?? 60_000);
+import { env } from "./env";
+
+export const BREAKER_THRESHOLD = env().BREAKER_THRESHOLD;
+export const BREAKER_PROBE_MS = env().BREAKER_PROBE_MS;
 
 export function shouldOpen(consecutiveFailures: number, threshold = BREAKER_THRESHOLD) {
   return consecutiveFailures >= threshold;

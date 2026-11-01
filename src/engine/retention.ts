@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db";
+import { env } from "@/lib/env";
 
 /**
  * Keep the tables bounded:
@@ -8,8 +9,8 @@ import type { Db } from "@/db";
  * Dead-lettered events are never purged automatically.
  */
 export async function runRetention(db: Db, opts: { bodyDays?: number; eventDays?: number } = {}) {
-  const bodyDays = opts.bodyDays ?? Number(process.env.RETENTION_BODY_DAYS ?? 7);
-  const eventDays = opts.eventDays ?? Number(process.env.RETENTION_EVENT_DAYS ?? 30);
+  const bodyDays = opts.bodyDays ?? env().RETENTION_BODY_DAYS;
+  const eventDays = opts.eventDays ?? env().RETENTION_EVENT_DAYS;
 
   const bodies = await db.execute(sql`
     update attempts set response_body = null

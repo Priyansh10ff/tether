@@ -7,6 +7,7 @@ import { newId } from "@/lib/ids";
 import { currentProject, setCurrentProject } from "@/lib/project";
 import { DEFAULT_SCHEDULE_SECONDS, JITTER } from "@/lib/retry";
 import { SIGNATURE_TOLERANCE_SECONDS } from "@/lib/signing";
+import { env } from "@/lib/env";
 import { PageHeader } from "@/components/page-header";
 
 export const metadata = { title: "Settings" };
@@ -68,7 +69,7 @@ export default async function SettingsPage() {
         <dl className="mt-3 grid grid-cols-[160px_1fr] gap-y-2 text-sm">
           <dt className="text-ink2">Retry schedule</dt><dd className="font-mono text-xs">{DEFAULT_SCHEDULE_SECONDS.map(fmt).join(" · ")} · then dead-letter</dd>
           <dt className="text-ink2">Jitter</dt><dd className="font-mono text-xs">±{JITTER * 100}%</dd>
-          <dt className="text-ink2">Per-attempt timeout</dt><dd className="font-mono text-xs">{process.env.DELIVERY_TIMEOUT_MS ?? 8000} ms</dd>
+          <dt className="text-ink2">Per-attempt timeout</dt><dd className="font-mono text-xs">{env().DELIVERY_TIMEOUT_MS} ms</dd>
           <dt className="text-ink2">Signature</dt><dd className="font-mono text-xs">HMAC-SHA256 · Tether-Signature · tolerance {SIGNATURE_TOLERANCE_SECONDS}s</dd>
           <dt className="text-ink2">Not retried</dt><dd className="font-mono text-xs">2xx (done), 3xx and 4xx except 408 / 425 / 429</dd>
         </dl>

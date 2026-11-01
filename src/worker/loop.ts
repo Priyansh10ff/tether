@@ -1,6 +1,7 @@
 import { hostname } from "node:os";
 import { claimDeliveries, dispatch, reapStaleClaims } from "@/engine";
 import type { Db } from "@/db";
+import { env } from "@/lib/env";
 
 export type WorkerOptions = {
   concurrency?: number;
@@ -12,9 +13,10 @@ export type WorkerOptions = {
 
 /** The delivery loop. Returns a stop() that resolves once the current tick finishes. */
 export function startWorker(db: Db, opts: WorkerOptions = {}) {
-  const concurrency = opts.concurrency ?? Number(process.env.WORKER_CONCURRENCY ?? 8);
-  const pollMs = opts.pollMs ?? Number(process.env.WORKER_POLL_MS ?? 500);
-  const timeoutMs = opts.timeoutMs ?? Number(process.env.DELIVERY_TIMEOUT_MS ?? 8000);
+  const cfg = env();
+  const concurrency = opts.concurrency ?? cfg.WORKER_CONCURRENCY;
+  const pollMs = opts.pollMs ?? cfg.WORKER_POLL_MS;
+  const timeoutMs = opts.timeoutMs ?? cfg.DELIVERY_TIMEOUT_MS;
   const leaseMs = timeoutMs * 2 + 5000;
   const workerId = opts.workerId ?? `${hostname()}-${process.pid}`;
   const log = opts.log ?? console.log;
