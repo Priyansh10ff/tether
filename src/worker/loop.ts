@@ -1,6 +1,6 @@
 import { hostname } from "node:os";
 import { eq, sql } from "drizzle-orm";
-import { claimDeliveries, dispatch, reapStaleClaims } from "@/engine";
+import { claimDeliveries, dispatch, reapStaleClaims, runRetention } from "@/engine";
 import { workers } from "@/db/schema";
 import type { Db } from "@/db";
 import { env } from "@/lib/env";
@@ -11,6 +11,8 @@ export type WorkerOptions = {
   timeoutMs?: number;
   workerId?: string;
   log?: (line: string) => void;
+  /** Run the daily retention job from this worker (default true). */
+  retention?: boolean;
 };
 
 /** The delivery loop. Returns a stop() that resolves once the current tick finishes. */
@@ -25,6 +27,7 @@ export function startWorker(db: Db, opts: WorkerOptions = {}) {
   let stopping = false;
   let lastReap = 0;
   let lastBeat = 0;
+  let lastRetention = Date.now();
   let delivered = 0, failed = 0;
 
   async function heartbeat() {
@@ -57,6 +60,11 @@ export function startWorker(db: Db, opts: WorkerOptions = {}) {
     while (!stopping) {
       try {
         if (Date.now() - lastBeat > 5_000) await heartbeat();
+        if (opts.retention !== false && Date.now() - lastRetention > 24 * 3600_000) {
+          lastRetention = Date.now();
+          const r = await runRetention(db);
+          log(`retention: cleared ${r.bodiesCleared} bodies, purged ${r.eventsPurged} events`);
+        }
         if (Date.now() - lastReap > 30_000) {
           const n = await reapStaleClaims(db, leaseMs);
           if (n) log(`reaped ${n} stale claims`);
