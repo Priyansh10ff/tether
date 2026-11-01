@@ -45,33 +45,33 @@ export async function ingestEvent(db: Db, input: IngestInput): Promise<IngestRes
     });
 
     const candidates = await tx
-      .select({ endpointId: endpoints.id, pattern: subscriptions.eventType, state: endpoints.state })
+      .select({ endpointId: endpoints.id, pattern: subscriptions.eventType, state: endpoints.state, maxAttempts: endpoints.maxAttempts })
       .from(subscriptions)
       .innerJoin(endpoints, eq(subscriptions.endpointId, endpoints.id))
       .where(and(eq(endpoints.projectId, input.projectId), isNull(endpoints.breakerOpenedAt)));
 
-    const targets = new Set<string>();
+    const targets = new Map<string, number>();
     for (const c of candidates) {
       if (c.state === "paused") continue;
-      if (topicMatches(c.pattern, input.type)) targets.add(c.endpointId);
+      if (topicMatches(c.pattern, input.type)) targets.set(c.endpointId, c.maxAttempts ?? DEFAULT_MAX_ATTEMPTS);
     }
     // Endpoints with an open breaker still get the delivery row; the worker skips them until the probe succeeds.
     const open = await tx
-      .select({ endpointId: endpoints.id, pattern: subscriptions.eventType })
+      .select({ endpointId: endpoints.id, pattern: subscriptions.eventType, maxAttempts: endpoints.maxAttempts })
       .from(subscriptions)
       .innerJoin(endpoints, eq(subscriptions.endpointId, endpoints.id))
       .where(and(eq(endpoints.projectId, input.projectId), eq(endpoints.state, "open")));
-    for (const c of open) if (topicMatches(c.pattern, input.type)) targets.add(c.endpointId);
+    for (const c of open) if (topicMatches(c.pattern, input.type)) targets.set(c.endpointId, c.maxAttempts ?? DEFAULT_MAX_ATTEMPTS);
 
     if (targets.size) {
       await tx.insert(deliveries).values(
-        [...targets].map((endpointId) => ({
+        [...targets].map(([endpointId, maxAttempts]) => ({
           id: newId.delivery(),
           projectId: input.projectId,
           eventId,
           endpointId,
           orderingKey: input.orderingKey ?? null,
-          maxAttempts: DEFAULT_MAX_ATTEMPTS,
+          maxAttempts,
         })),
       );
     }

@@ -103,3 +103,20 @@ describe("stale claims", () => {
     expect(await claimDeliveries(db, "w-2", 1)).toHaveLength(1);
   });
 });
+
+describe("per-endpoint max attempts", () => {
+  it("dead-letters after the endpoint's own limit", async () => {
+    const { projectId, endpointId } = await seedProject(db);
+    await db.update(endpoints).set({ maxAttempts: 2 }).where(eq(endpoints.id, endpointId));
+    await ingestEvent(db, { projectId, type: "order.paid", payload: {} });
+    const { fetcher } = fakeFetch([503]);
+    let out;
+    for (let i = 0; i < 2; i++) {
+      await due();
+      const [c] = await claimDeliveries(db, "w", 1);
+      out = await dispatch(db, c, { workerId: "w", timeoutMs: 100, fetcher });
+    }
+    expect(out!.final).toBe("dead");
+    expect(out!.attempt).toBe(2);
+  });
+});

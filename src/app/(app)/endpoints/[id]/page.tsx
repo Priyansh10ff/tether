@@ -68,6 +68,7 @@ export default async function EndpointPage({ params, searchParams }: { params: P
             <input type="hidden" name="id" value={ep.id} />
             <div><label className="lbl" htmlFor="description">Description</label><input id="description" name="description" className="input" defaultValue={ep.description ?? ""} /></div>
             <div><label className="lbl" htmlFor="rate_limit">Rate limit (requests/second)</label><input id="rate_limit" name="rate_limit" type="number" min={1} className="input font-mono" defaultValue={ep.rateLimitPerSecond ?? ""} placeholder="none" /></div>
+            <div><label className="lbl" htmlFor="max_attempts">Attempts before dead-letter</label><input id="max_attempts" name="max_attempts" type="number" min={1} max={20} className="input font-mono" defaultValue={ep.maxAttempts ?? ""} placeholder="7 (default)" /><p className="mt-1 text-[11px] text-dim">Delays beyond the 7th reuse the last step (6 h).</p></div>
             <button className="btn">Save</button>
           </form>
           <dl className="mt-4 grid grid-cols-[150px_1fr] gap-y-1 text-xs">
