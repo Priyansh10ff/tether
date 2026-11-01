@@ -1,11 +1,11 @@
 # One image, two roles: `app` (Next.js dashboard + API) and `worker` (delivery loop).
-FROM node:22-alpine AS deps
+FROM node:26-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY packages/node/package.json packages/node/
 RUN npm ci --no-audit --no-fund
 
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -14,7 +14,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production
 RUN ADMIN_PASSWORD=build-placeholder-not-used SESSION_SECRET=build-placeholder-not-used-32-chars npm run build \
  && npm prune --omit=dev --no-audit --no-fund
 
-FROM node:22-alpine AS runtime
+FROM node:26-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000
 RUN addgroup -S tether && adduser -S tether -G tether
