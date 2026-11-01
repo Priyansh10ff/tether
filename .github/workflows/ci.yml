@@ -4,6 +4,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -14,12 +17,16 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - run: npm run lint
       - run: npx tsc --noEmit
       - run: npm test
+        env:
+          ADMIN_PASSWORD: ci-password-not-real
+          SESSION_SECRET: ci-only-secret-not-for-production-32chars
       - run: npm run build
         env:
-          SESSION_SECRET: ci-only-secret-not-for-production
-          ADMIN_PASSWORD: ci
+          ADMIN_PASSWORD: ci-password-not-real
+          SESSION_SECRET: ci-only-secret-not-for-production-32chars
   sdk:
     runs-on: ubuntu-latest
     steps:
@@ -29,3 +36,10 @@ jobs:
           node-version: 22
       - run: npm ci --no-audit --no-fund
       - run: npm run build --workspace @tether/node
+      - run: npm pack --workspace @tether/node --dry-run
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t tether:ci .
+      - run: docker run --rm tether:ci node -e "console.log(process.version)"
