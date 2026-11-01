@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { attempts, deliveries, endpoints, events, subscriptions } from "@/db/schema";
 import { currentProject } from "@/lib/project";
-import { deleteEndpoint, rotateSecret, setEndpointState, updateEndpoint, updateSubscriptions } from "@/lib/actions/endpoints";
+import { deleteEndpoint, pingEndpoint, rotateSecret, setEndpointState, updateEndpoint, updateSubscriptions } from "@/lib/actions/endpoints";
 import { PageHeader } from "@/components/page-header";
 import { Code, DeliveryStatus, EndpointState } from "@/components/pills";
 import { Time } from "@/components/time";
@@ -29,6 +29,7 @@ export default async function EndpointPage({ params, searchParams }: { params: P
     <div>
       <PageHeader title={ep.url} sub={ep.description ?? undefined}>
         <EndpointState state={ep.state} />
+        <form action={pingEndpoint}><input type="hidden" name="id" value={ep.id} /><button className="btn" title="Queue a tether.ping delivery to this endpoint">Send ping</button></form>
         <form action={setEndpointState}>
           <input type="hidden" name="id" value={ep.id} />
           <input type="hidden" name="state" value={ep.state === "paused" ? "active" : "paused"} />

@@ -97,3 +97,17 @@ export async function deleteEndpoint(formData: FormData) {
   await audit(db, { projectId: ep.projectId, actor: "admin", action: "endpoint.delete", target: ep.id, detail: { url: ep.url } });
   redirect("/endpoints");
 }
+
+/** Queue one `tether.ping` delivery to this endpoint only, bypassing subscriptions. */
+export async function pingEndpoint(formData: FormData) {
+  const ep = await owned(String(formData.get("id")));
+  const { events, deliveries } = await import("@/db/schema");
+  const { DEFAULT_MAX_ATTEMPTS } = await import("@/lib/retry");
+  const eventId = newId.event();
+  await db.transaction(async (tx) => {
+    await tx.insert(events).values({ id: eventId, projectId: ep.projectId, type: "tether.ping", payload: { endpoint_id: ep.id, sent_at: new Date().toISOString() } });
+    await tx.insert(deliveries).values({ id: newId.delivery(), projectId: ep.projectId, eventId, endpointId: ep.id, maxAttempts: ep.maxAttempts ?? DEFAULT_MAX_ATTEMPTS });
+  });
+  await audit(db, { projectId: ep.projectId, actor: "admin", action: "event.send", target: eventId, detail: { type: "tether.ping", endpoint: ep.id } });
+  redirect(`/events/${eventId}`);
+}
