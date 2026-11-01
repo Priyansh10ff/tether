@@ -93,7 +93,7 @@ export default async function EndpointPage({ params, searchParams }: { params: P
               <tr key={d.id}>
                 <td className="td"><Link href={`/events/${d.eventId}`} className="font-mono text-xs hover:text-acc">{d.eventId}</Link></td>
                 <td className="td font-mono text-xs">{type}</td>
-                <td className="td"><DeliveryStatus status={d.status} /></td>
+                <td className="td"><DeliveryStatus status={d.status} attempt={d.attempt} /></td>
                 <td className="td tnum font-mono text-xs">{d.attempt} / {d.maxAttempts}</td>
                 <td className="td"><Code code={d.lastStatusCode} error={d.lastError} /></td>
                 <td className="td">{d.status === "pending" ? <Time d={d.nextAttemptAt} /> : <span className="text-dim">—</span>}</td>

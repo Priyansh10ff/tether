@@ -10,7 +10,8 @@ export function EndpointState({ state }: { state: Endpoint["state"] }) {
   return <span className={`pill ${cls}`}>{label}</span>;
 }
 
-export function DeliveryStatus({ status }: { status: Delivery["status"] }) {
+export function DeliveryStatus({ status, attempt = 1 }: { status: Delivery["status"]; attempt?: number }) {
+  if (status === "pending" && attempt === 0) return <span className="pill bg-acc/10 text-acc">queued</span>;
   const map = {
     pending: ["bg-warn/10 text-warn", "retrying"],
     in_flight: ["bg-acc/10 text-acc", "in flight"],

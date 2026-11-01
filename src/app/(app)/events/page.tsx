@@ -81,7 +81,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                 <td className="td"><span className="font-mono text-xs text-acc">{d.eventId}</span></td>
                 <td className="td font-mono text-xs">{type}</td>
                 <td className="td max-w-56 truncate font-mono text-xs text-ink2" title={url}>{url.replace(/^https?:\/\//, "")}</td>
-                <td className="td"><DeliveryStatus status={d.status} /></td>
+                <td className="td"><DeliveryStatus status={d.status} attempt={d.attempt} /></td>
                 <td className="td tnum font-mono text-xs">{d.attempt} / {d.maxAttempts}</td>
                 <td className="td"><Code code={d.lastStatusCode} error={d.lastError} /></td>
                 <td className="td">{d.status === "pending" ? <Time d={d.nextAttemptAt} /> : <span className="text-dim">—</span>}</td>

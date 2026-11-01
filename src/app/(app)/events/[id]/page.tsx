@@ -40,7 +40,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               <section key={d.id} className="card">
                 <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3">
                   <Link href={`/endpoints/${d.endpointId}`} className="font-mono text-xs hover:text-acc">{url}</Link>
-                  <DeliveryStatus status={d.status} />
+                  <DeliveryStatus status={d.status} attempt={d.attempt} />
                   <span className="tnum font-mono text-xs text-ink2">attempt {d.attempt} of {d.maxAttempts}</span>
                   <span className="ml-auto flex items-center gap-2">
                     {d.status === "pending" && <span className="font-mono text-xs text-dim">next <Time d={d.nextAttemptAt} /></span>}
