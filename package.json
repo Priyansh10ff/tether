@@ -1,6 +1,6 @@
 {
   "name": "tether",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Self-hosted webhook delivery platform. Signed payloads, retries with backoff, dead-letter queue, replay dashboard. Postgres is the only dependency.",
   "license": "MIT",

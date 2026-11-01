@@ -1,14 +1,29 @@
 {
   "name": "@tether/node",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Verify and send Tether webhooks from Node.js. Zero dependencies.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
-  "files": ["dist", "README.md"],
-  "scripts": { "build": "tsc -p tsconfig.json", "prepublishOnly": "npm run build" },
-  "engines": { "node": ">=18" },
-  "devDependencies": { "typescript": "^5.9.0" }
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  }
 }

@@ -9,7 +9,7 @@ git clone https://github.com/Priyansh10ff/tether && cd tether
 docker compose up
 ```
 
-Dashboard on http://localhost:3000 (password `tether` unless you set `ADMIN_PASSWORD`). Create an API key, add an endpoint, then:
+Dashboard on http://localhost:3000 (password `tether` unless you set `ADMIN_PASSWORD`). No Docker? Set `DATABASE_URL=pglite://./.tether-data` in `.env` and `npm run dev` runs an embedded Postgres with the worker inside the app. Create an API key, add an endpoint, then:
 
 ```
 TETHER_API_KEY=tk_live_… npx tether send order.paid --data '{"order_id":"ord_1"}'
@@ -28,6 +28,8 @@ TETHER_API_KEY=tk_live_… npx tether tail
 | Receiver can only take N/s | `rate_limit_per_second` per endpoint. Excess waits in the queue instead of producing 429s. |
 | A worker is killed mid-send | Deliveries are claimed with `SELECT … FOR UPDATE SKIP LOCKED`. A crashed worker's lease expires and another worker picks the row up. |
 | It still failed after everything | Dead-letter queue with payload, every attempt and every response body. Replay one or all from the dashboard, the API or the CLI. |
+| Someone points an endpoint at your metadata service | Endpoint URLs are checked against private, loopback and link-local ranges and re-resolved right before each send. Redirects are never followed; response bodies are capped at 4 KB. |
+| A key leaks or a client goes haywire | Per-key ingest rate limit (429 with Retry-After), 256 KB body cap, keys stored hashed, every admin action in an audit log. |
 
 ## Architecture
 
@@ -132,15 +134,37 @@ Try the retry path end to end: `node examples/receiver/server.mjs` starts a rece
 
 The Docker image serves both roles. Run `app` behind TLS and as many `worker` replicas as you like against any Postgres (Supabase, Neon, RDS, a VM). Set `ADMIN_PASSWORD`, `SESSION_SECRET` and `DATABASE_URL`; everything else has defaults. Schedule `npm run retention` daily to clear response bodies older than 7 days and purge delivered events older than 30 (dead-lettered events are never purged automatically).
 
-The dashboard can run on Vercel. The worker cannot: it is a long-lived loop and needs a real process (Fly, Railway, Render, a container anywhere).
+The dashboard can run on Vercel. The worker cannot: it is a long-lived loop and needs a real process (Fly, Railway, Render, a container anywhere). `/api/health` is the liveness probe; `/api/health?ready=1` also requires a worker heartbeat in the last 30 seconds. The container runs as a non-root user with a built-in healthcheck. See `SECURITY.md` for the threat model.
+
+## Configuration
+
+Everything is read from the environment and validated at boot (`src/lib/env.ts`); a bad value stops the process with the offending key named.
+
+| Variable | Default | What it does |
+|---|---|---|
+| `DATABASE_URL` | `postgres://tether:tether@localhost:5433/tether` | `postgres://` for a server, `pglite://<dir>` for embedded (single process) |
+| `ADMIN_PASSWORD` | required | dashboard login; 12+ characters in production |
+| `SESSION_SECRET` | required | signs the session cookie; 32+ characters in production |
+| `WORKER_CONCURRENCY` | 8 | deliveries in flight per worker |
+| `WORKER_POLL_MS` | 500 | idle poll interval |
+| `DELIVERY_TIMEOUT_MS` | 8000 | per-attempt HTTP timeout |
+| `BREAKER_THRESHOLD` / `BREAKER_PROBE_MS` | 10 / 60000 | consecutive failures to open; probe interval |
+| `MAX_EVENT_BYTES` | 262144 | ingest body cap (413 beyond) |
+| `INGEST_RATE_PER_KEY` | 1000 | requests per second per API key (429 beyond) |
+| `LOGIN_MAX_ATTEMPTS` / `LOGIN_WINDOW_MS` | 10 / 900000 | login brute-force limit |
+| `ALLOW_PRIVATE_ENDPOINTS` | 0 in production, 1 otherwise | allow localhost/private endpoint URLs |
+| `RETENTION_BODY_DAYS` / `RETENTION_EVENT_DAYS` | 7 / 30 | daily job run by the worker |
+| `WORKER_INLINE` | unset | `1` runs the worker inside the Next.js process |
 
 ## Tests
 
 ```
-npm test
+npm test            # vitest on an in-memory Postgres (PGlite) with the real migrations
+npm run lint        # eslint, Next config
+npx tsc --noEmit
 ```
 
-Twenty-eight tests run against an in-memory Postgres (PGlite) using the real migration files, so the claim query, the breaker, rate limiting, ordering and dead-lettering are tested as SQL, not as mocks. Nothing needs Docker to run the suite.
+Forty-three tests cover the claim query (ordering, rate limits, breaker probes, stale-claim recovery), signing and rotation, the retry schedule, dead-lettering, retention, SSRF checks, config validation, login rate limiting, the SDK, and the HTTP API called as real route handlers. Nothing needs Docker to run the suite. CI runs lint, typecheck, tests, the Next build, the SDK pack, a Docker build and CodeQL on every push.
 
 ## Project layout
 
@@ -160,7 +184,7 @@ examples/        breakable receiver
 
 ## Limits worth knowing
 
-Rate limiting and ordering are evaluated with correlated subqueries inside the claim query. That is correct and simple, and fine into the thousands of deliveries per second on one Postgres, but it is not free; at larger volumes the next step is a per-endpoint token table. Idempotency keys are scoped per project and kept with the event, so a key reused after the event is purged by retention will be accepted again. There is one admin login; multi-user auth is a later concern, which is why every table already hangs off a `projects` row.
+Rate limiting and ordering are evaluated with correlated subqueries inside the claim query. That is correct and simple, and fine into the thousands of deliveries per second on one Postgres, but it is not free; at larger volumes the next step is a per-endpoint token table. The per-key ingest limit and the login limit are in-process counters, so with several app replicas each replica enforces its own budget. Idempotency keys are scoped per project and kept with the event, so a key reused after the event is purged by retention will be accepted again. There is one admin login; multi-user auth is a later concern, which is why every table already hangs off a `projects` row and every action is already audited. No throughput figures are quoted here because I have not measured on hardware that would mean anything to you; `load/` has the k6 script to measure on yours.
 
 ## Licence
 

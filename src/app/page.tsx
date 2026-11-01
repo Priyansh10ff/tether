@@ -117,11 +117,11 @@ export default function LandingPage() {
       
       <section className="s" id="numbers" style={{paddingTop:"20px"}}><div className="wrap">
         <div className="stats">
-          <div className="stat pre"><span className="v"><span>4,200<small>/s</small></span></span><div className="k">Sustained throughput</div><div className="d">one worker, one Postgres, k6 for 10 min</div></div>
-          <div className="stat pre"><span className="v"><span>7</span></span><div className="k">Attempts over 24h</div><div className="d">5s · 30s · 2m · 10m · 1h · 6h · 24h</div></div>
-          <div className="stat pre"><span className="v"><span>0</span></span><div className="k">Lost deliveries</div><div className="d">worker killed with SIGKILL mid-send, 1,000 runs</div></div>
-          <div className="stat pre"><span className="v"><span>1</span></span><div className="k">Dependency</div><div className="d">Postgres. No Redis, no Kafka, no queue service.</div></div>
-        </div>
+            <div className="stat pre"><span className="v"><span>7</span></span><div className="k">Attempts over 24h</div><div className="d">5s · 30s · 2m · 10m · 1h · 6h · 24h, ±20% jitter</div></div>
+            <div className="stat pre"><span className="v"><span>300<small>s</small></span></span><div className="k">Signature window</div><div className="d">HMAC-SHA256 over timestamp and body; older requests are refused</div></div>
+            <div className="stat pre"><span className="v"><span>43</span></span><div className="k">Tests on real SQL</div><div className="d">claim query, breaker, ordering, rate limits, API, all on an embedded Postgres</div></div>
+            <div className="stat pre"><span className="v"><span>1</span></span><div className="k">Dependency</div><div className="d">Postgres. No Redis, no Kafka, no queue service.</div></div>
+          </div>
       </div></section>
       
       <section className="final" id="start"><div className="lines"><i></i><i></i><i></i></div><div className="wrap">

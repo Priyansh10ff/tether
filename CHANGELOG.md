@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
 - Config validated at boot (zod); production refuses weak admin password or session secret.
 - Login rate limiting; constant-time password compare.
@@ -13,6 +13,10 @@
 - `pglite://` database URLs for a no-Docker local setup with an in-process worker.
 - Send-test-event page, mobile navigation, friendlier database-down screen.
 - ESLint, CodeQL, Dependabot, Docker build in CI; non-root container with healthchecks.
+- Per-key ingest rate limit with Retry-After; request ids and JSON access logs.
+- Readiness probe (`/api/health?ready=1`) with backlog and worker counts; retention runs daily inside the worker.
+- Send ping per endpoint, clickable event rows, retry-all-waiting, per-endpoint health on the overview, secrets revealed on demand instead of rendered.
+- Landing page claims reduced to what the repo can back.
 
 ## 0.1.0
 
