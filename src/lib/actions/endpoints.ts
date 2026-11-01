@@ -8,6 +8,7 @@ import { newId } from "@/lib/ids";
 import { currentProject } from "@/lib/project";
 import { newEndpointSecret } from "@/lib/signing";
 import { checkEndpointUrl } from "@/lib/urlsafety";
+import { audit } from "@/lib/audit";
 
 function parseTypes(raw: string) {
   return [...new Set(raw.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean))];
@@ -32,6 +33,7 @@ export async function createEndpoint(formData: FormData) {
     });
     await tx.insert(subscriptions).values((types.length ? types : ["*"]).map((eventType) => ({ id: newId.subscription(), endpointId: id, eventType })));
   });
+  await audit(db, { projectId: project.id, actor: "admin", action: "endpoint.create", target: id, detail: { url, types } });
   redirect(`/endpoints/${id}?created=1`);
 }
 
@@ -49,6 +51,7 @@ export async function setEndpointState(formData: FormData) {
     .update(endpoints)
     .set({ state, consecutiveFailures: 0, breakerOpenedAt: null, breakerProbeAt: null })
     .where(eq(endpoints.id, ep.id));
+  await audit(db, { projectId: ep.projectId, actor: "admin", action: state === "paused" ? "endpoint.pause" : "endpoint.resume", target: ep.id });
   revalidatePath(`/endpoints/${ep.id}`);
   revalidatePath("/endpoints");
 }
@@ -59,6 +62,7 @@ export async function rotateSecret(formData: FormData) {
     .update(endpoints)
     .set({ secret: newEndpointSecret(), previousSecret: ep.secret, previousSecretExpiresAt: new Date(Date.now() + 24 * 3600 * 1000) })
     .where(eq(endpoints.id, ep.id));
+  await audit(db, { projectId: ep.projectId, actor: "admin", action: "endpoint.rotate_secret", target: ep.id });
   revalidatePath(`/endpoints/${ep.id}`);
 }
 
@@ -69,24 +73,27 @@ export async function updateSubscriptions(formData: FormData) {
     await tx.delete(subscriptions).where(eq(subscriptions.endpointId, ep.id));
     if (types.length) await tx.insert(subscriptions).values(types.map((eventType) => ({ id: newId.subscription(), endpointId: ep.id, eventType })));
   });
+  await audit(db, { projectId: ep.projectId, actor: "admin", action: "endpoint.subscriptions", target: ep.id, detail: { types } });
   revalidatePath(`/endpoints/${ep.id}`);
 }
 
 export async function updateEndpoint(formData: FormData) {
   const ep = await owned(String(formData.get("id")));
   const rl = Number(formData.get("rate_limit"));
-  await db
-    .update(endpoints)
-    .set({
-      description: String(formData.get("description") ?? "").trim() || null,
-      rateLimitPerSecond: Number.isFinite(rl) && rl > 0 ? rl : null,
-    })
-    .where(eq(endpoints.id, ep.id));
+  const ma = Number(formData.get("max_attempts"));
+  const patch = {
+    description: String(formData.get("description") ?? "").trim() || null,
+    rateLimitPerSecond: Number.isFinite(rl) && rl > 0 ? Math.min(rl, 10_000) : null,
+    maxAttempts: Number.isFinite(ma) && ma >= 1 && ma <= 20 ? ma : null,
+  };
+  await db.update(endpoints).set(patch).where(eq(endpoints.id, ep.id));
+  await audit(db, { projectId: ep.projectId, actor: "admin", action: "endpoint.update", target: ep.id, detail: patch });
   revalidatePath(`/endpoints/${ep.id}`);
 }
 
 export async function deleteEndpoint(formData: FormData) {
   const ep = await owned(String(formData.get("id")));
   await db.delete(endpoints).where(eq(endpoints.id, ep.id));
+  await audit(db, { projectId: ep.projectId, actor: "admin", action: "endpoint.delete", target: ep.id, detail: { url: ep.url } });
   redirect("/endpoints");
 }

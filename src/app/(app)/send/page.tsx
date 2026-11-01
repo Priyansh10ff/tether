@@ -6,6 +6,7 @@ import { endpoints, subscriptions } from "@/db/schema";
 import { ingestEvent } from "@/engine";
 import { currentProject } from "@/lib/project";
 import { PageHeader } from "@/components/page-header";
+import { audit } from "@/lib/audit";
 
 export const metadata = { title: "Send a test event" };
 
@@ -27,6 +28,7 @@ async function send(formData: FormData) {
     orderingKey: String(formData.get("ordering_key") ?? "").trim() || null,
   });
   if (r.status === "invalid") redirect("/send?error=type&type=" + encodeURIComponent(type));
+  await audit(db, { projectId: project.id, actor: "admin", action: "event.send", target: r.eventId, detail: { type } });
   redirect(`/events/${r.eventId}`);
 }
 

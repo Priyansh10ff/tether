@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { deliveries } from "@/db/schema";
 import { currentProject } from "@/lib/project";
+import { audit } from "@/lib/audit";
 
 /** Put a delivery back on the queue now. Works for pending (skip the wait), dead and discarded. */
 export async function replayDelivery(formData: FormData) {
@@ -13,16 +14,19 @@ export async function replayDelivery(formData: FormData) {
     .update(deliveries)
     .set({ status: "pending", nextAttemptAt: new Date(), deadAt: null, claimedBy: null, claimedAt: null })
     .where(and(eq(deliveries.id, id), eq(deliveries.projectId, project.id), inArray(deliveries.status, ["pending", "dead", "discarded"])));
+  await audit(db, { projectId: project.id, actor: "admin", action: "delivery.replay", target: id });
   revalidatePath("/", "layout");
 }
 
 export async function replayAllDead(formData: FormData) {
   const { project } = await currentProject();
   const endpointId = String(formData.get("endpoint") ?? "");
-  await db
+  const replayed = await db
     .update(deliveries)
     .set({ status: "pending", nextAttemptAt: new Date(), deadAt: null })
-    .where(and(eq(deliveries.projectId, project.id), eq(deliveries.status, "dead"), ...(endpointId ? [eq(deliveries.endpointId, endpointId)] : [])));
+    .where(and(eq(deliveries.projectId, project.id), eq(deliveries.status, "dead"), ...(endpointId ? [eq(deliveries.endpointId, endpointId)] : [])))
+    .returning({ id: deliveries.id });
+  await audit(db, { projectId: project.id, actor: "admin", action: "delivery.replay_all", target: endpointId || null, detail: { count: replayed.length } });
   revalidatePath("/", "layout");
 }
 
@@ -32,5 +36,6 @@ export async function discardDelivery(formData: FormData) {
     .update(deliveries)
     .set({ status: "discarded" })
     .where(and(eq(deliveries.id, String(formData.get("id"))), eq(deliveries.projectId, project.id), eq(deliveries.status, "dead")));
+  await audit(db, { projectId: project.id, actor: "admin", action: "delivery.discard", target: String(formData.get("id")) });
   revalidatePath("/", "layout");
 }

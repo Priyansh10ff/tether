@@ -8,6 +8,7 @@ import { currentProject } from "@/lib/project";
 import { PageHeader } from "@/components/page-header";
 import { Time } from "@/components/time";
 import { cookies } from "next/headers";
+import { audit } from "@/lib/audit";
 
 export const metadata = { title: "API keys" };
 
@@ -18,7 +19,9 @@ async function createKey(formData: FormData) {
   const { project } = await currentProject();
   const name = String(formData.get("name") ?? "").trim() || "unnamed";
   const { key, prefix, hash } = newApiKey();
-  await db.insert(apiKeys).values({ id: newId.apiKey(), projectId: project.id, name, prefix, hash });
+  const id = newId.apiKey();
+  await db.insert(apiKeys).values({ id, projectId: project.id, name, prefix, hash });
+  await audit(db, { projectId: project.id, actor: "admin", action: "key.create", target: id, detail: { name, prefix } });
   // Show the full key exactly once, on the next render.
   (await cookies()).set(FLASH, key, { path: "/keys", maxAge: 60, httpOnly: true, sameSite: "lax" });
   revalidatePath("/keys");
@@ -27,7 +30,9 @@ async function createKey(formData: FormData) {
 async function revokeKey(formData: FormData) {
   "use server";
   const { project } = await currentProject();
-  await db.update(apiKeys).set({ revokedAt: new Date() }).where(and(eq(apiKeys.id, String(formData.get("id"))), eq(apiKeys.projectId, project.id)));
+  const id = String(formData.get("id"));
+  await db.update(apiKeys).set({ revokedAt: new Date() }).where(and(eq(apiKeys.id, id), eq(apiKeys.projectId, project.id)));
+  await audit(db, { projectId: project.id, actor: "admin", action: "key.revoke", target: id });
   revalidatePath("/keys");
 }
 

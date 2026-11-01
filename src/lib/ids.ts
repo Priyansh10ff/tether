@@ -31,4 +31,6 @@ export const newId = {
   event: () => "evt_" + ulid(),
   delivery: () => "dlv_" + ulid(),
   attempt: () => "att_" + ulid(),
+  audit: () => "aud_" + ulid(),
+  worker: () => "wrk_" + ulid(),
 };
