@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
-import { adminPasswordOk, createSession, isAuthenticated } from "@/lib/session";
+import { attemptLogin, isAuthenticated } from "@/lib/session";
 
 async function login(formData: FormData) {
   "use server";
-  const password = String(formData.get("password") ?? "");
-  if (!adminPasswordOk(password)) redirect("/login?error=1");
-  await createSession();
+  const result = await attemptLogin(String(formData.get("password") ?? ""));
+  if (result !== "ok") redirect("/login?error=" + result);
   redirect("/overview");
 }
 
@@ -30,7 +29,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <p className="mt-1 text-sm text-ink2">Use the admin password from your <code className="font-mono text-ink">.env</code>.</p>
           <label className="lbl mt-6" htmlFor="password">Password</label>
           <input id="password" name="password" type="password" required autoFocus className="input font-mono" />
-          {error && <p className="mt-2 text-sm text-bad">That password is not right.</p>}
+          {error === "bad_password" && <p className="mt-2 text-sm text-bad">That password is not right.</p>}
+          {error === "rate_limited" && <p className="mt-2 text-sm text-bad">Too many attempts. Try again in a few minutes.</p>}
           <button className="btn-pri mt-5 w-full justify-center">Continue</button>
         </form>
         <p className="mt-5 text-center font-mono text-[11px] text-dim">self-hosted · github.com/Priyansh10ff/tether</p>
